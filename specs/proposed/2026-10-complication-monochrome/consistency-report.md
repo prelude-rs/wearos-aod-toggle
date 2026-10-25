@@ -15,6 +15,7 @@ Verdict: PASS
 |---|---------|----------|---------|-------------|------|
 | 1 | PASS    | 0        | 4       | 0           | —    |
 | 2 | PASS    | 0        | 1       | 0           | b0b7513 |
+| 3 | PASS    | 0        | 0       | 0           | 7121ab7 |
 
 ## Check 1 — Coverage spec → design
 sem achados
@@ -23,9 +24,7 @@ sem achados
 sem achados
 
 ## Check 3 — Contradictions
-| # | Classe | Sítio | Por que morde aqui | Conserto |
-|---|--------|-------|---------------------|----------|
-| W1 | WARNING | design.md:85 (mapa, linha R2: "`aod_text` como `Icon` de recurso") | O delta trocou o `Icon` de recurso por bitmap branco (design.md:51, :121, :175); a linha do mapa, fora do delta, ficou com a forma antiga e contradiz a linha 51. Quem implementa a Task 3 pelo mapa cria `Icon.createWithResource` e reabre o risco do antigo W4. | Reescrever a linha para "`aod_text` rasterizado em bitmap branco (`monochromeIcon`)". |
+sem achados
 
 ## Check 4 — Epic invariants
 n.a. — change sem épico (spec.md:7 `Epic: none`).
@@ -50,6 +49,6 @@ sem achados
 
 ## Minimal edit set (on FAIL)
 ### Edições no design
-- design.md:85 → trocar "`Icon` de recurso" por bitmap branco rasterizado (W1).
+nenhuma
 ### Reabertura do Gate 1
 Reaberturas do Gate 1 propostas: 0
