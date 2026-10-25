@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "aod-toggle"
+rootProject.name = "wearos-aod-toggle"
 include(":app")

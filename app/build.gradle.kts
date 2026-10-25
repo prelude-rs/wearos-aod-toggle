@@ -11,11 +11,11 @@ val releaseSigningProps = listOf("file", "password", "alias", "keyPassword").ass
 val hasReleaseSigning = releaseSigningProps.values.all { !it.isNullOrBlank() }
 
 android {
-    namespace = "cc.floresta.aodtoggle"
+    namespace = "rs.prelude.aodtoggle"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "cc.floresta.aodtoggle"
+        applicationId = "rs.prelude.aodtoggle"
         minSdk = 34
         targetSdk = 34
         versionCode = 1

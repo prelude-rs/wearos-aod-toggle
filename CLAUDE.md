@@ -1,4 +1,4 @@
-# wearos-complication-aod-toggle
+# wearos-aod-toggle
 
 <!-- sdd-kit:seam:start -->
 ## The Superpowers encaixe (overrides SP skill defaults — read before brainstorming/planning)

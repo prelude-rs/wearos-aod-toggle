@@ -4,7 +4,7 @@ A Wear OS complication that shows and toggles the watch's Always-On Display (AOD
 
 The AOD switch is `Settings.Global` `ambient_enabled` (1 = on, 0 = off). Writing it requires `android.permission.WRITE_SECURE_SETTINGS`, which Android only lets you grant over adb, hence the `pm grant` step below.
 
-The commands below build and install the release variant, application id `cc.floresta.aodtoggle`, label "AOD".
+The source lives in `git@github.com:prelude-rs/wearos-aod-toggle.git`. The commands below build and install the release variant, application id `rs.prelude.aodtoggle`, label "AOD". If you still have the old package installed (`cc.floresta.aodtoggle`, until 2026-10-25), uninstall it first: `adb uninstall cc.floresta.aodtoggle`.
 
 ## Prerequisites
 
@@ -20,16 +20,17 @@ The commands below build and install the release variant, application id `cc.flo
 Create a keystore (anywhere outside the repo) and answer the prompts:
 
 ```sh
-keytool -genkeypair -v -keystore ~/aodtoggle-release.jks -alias aodtoggle \
-  -keyalg RSA -keysize 2048 -validity 10000
+keytool -genkeypair -v -keystore ~/prelude-rs-release.jks -alias prelude \
+  -keyalg RSA -keysize 2048 -validity 10000 \
+  -dname "CN=prelude-rs, O=prelude-rs, C=BR"
 ```
 
 Then add all four entries to `~/.gradle/gradle.properties` (never to the repo):
 
 ```properties
-aodtoggle.keystore.file=/home/you/aodtoggle-release.jks
+aodtoggle.keystore.file=/home/you/prelude-rs-release.jks
 aodtoggle.keystore.password=<keystore password>
-aodtoggle.keystore.alias=aodtoggle
+aodtoggle.keystore.alias=prelude
 aodtoggle.keystore.keyPassword=<key password>
 ```
 
@@ -68,7 +69,7 @@ Keep the Wireless debugging screen open while you work. The watch drops Wi-Fi wh
 
 ```sh
 adb install -r app/build/outputs/apk/release/app-release.apk
-adb shell pm grant cc.floresta.aodtoggle android.permission.WRITE_SECURE_SETTINGS
+adb shell pm grant rs.prelude.aodtoggle android.permission.WRITE_SECURE_SETTINGS
 ```
 
 The grant survives reinstalling with the same signature. It is lost if you uninstall the app, so run it again after an uninstall.
@@ -93,11 +94,11 @@ The grant survives reinstalling with the same signature. It is lost if you unins
 
 ## Development
 
-The debug variant is a separate app: `cc.floresta.aodtoggle.debug`, label "AOD (debug)".
+The debug variant is a separate app: `rs.prelude.aodtoggle.debug`, label "AOD (debug)".
 
 ```sh
 ./gradlew installDebug
-adb shell pm grant cc.floresta.aodtoggle.debug android.permission.WRITE_SECURE_SETTINGS
+adb shell pm grant rs.prelude.aodtoggle.debug android.permission.WRITE_SECURE_SETTINGS
 ./gradlew connectedDebugAndroidTest   # instrumented tests on the connected watch
 ./gradlew ktlintCheck detekt lintDebug testDebugUnitTest   # L1 checks
 ```
@@ -105,5 +106,5 @@ adb shell pm grant cc.floresta.aodtoggle.debug android.permission.WRITE_SECURE_S
 Uninstall the debug app before checking the release app by hand, so only one "AOD" complication provider exists:
 
 ```sh
-adb uninstall cc.floresta.aodtoggle.debug
+adb uninstall rs.prelude.aodtoggle.debug
 ```
