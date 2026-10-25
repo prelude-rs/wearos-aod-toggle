@@ -270,9 +270,9 @@ Isolação: subagente separado do eixo Spec. Padrão documentado: não há `CODI
 
 | Achado | Smell | Onde (file:line do diff) | Por que morde aqui | Desfecho |
 |---|---|---|---|---|
-| S1 — `Log.w(LOG_TAG, it)` escrito duas vezes (default de `SystemAodSettings.log` e lambda de `aodToggle()`) | Duplicated Code | `system/SystemAodSettings.kt:17` e `:46` | Mudar tag ou nível exige editar os dois pontos, que podem divergir sem aviso | pendente — decisão do autor |
-| S2 — `ToggleReceiver` também só redesenha (`REFRESH`, estado indisponível) | Mysterious Name | `complication/ToggleReceiver.kt:13`; `complication/AodComplicationService.kt:41` | Quem lê "toggle receiver" no estado indisponível espera uma alternância que não acontece (R6) | pendente — decisão do autor |
-| S3 — `render(aodToggle(this).current())` em `onCreate` (else) e em `onRestart` | Duplicated Code | `trigger/TriggerActivity.kt:38` e `:51` | A política "reler sem alternar" fica espalhada em dois ciclos de vida | pendente — decisão do autor |
+| S1 — `Log.w(LOG_TAG, it)` escrito duas vezes (default de `SystemAodSettings.log` e lambda de `aodToggle()`) | Duplicated Code | `system/SystemAodSettings.kt:17` e `:46` | Mudar tag ou nível exige editar os dois pontos, que podem divergir sem aviso | fixed — `3ea483c` (decisão do autor, 2026-10-25) |
+| S2 — `ToggleReceiver` também só redesenha (`REFRESH`, estado indisponível) | Mysterious Name | `complication/ToggleReceiver.kt:13`; `complication/AodComplicationService.kt:41` | Quem lê "toggle receiver" no estado indisponível espera uma alternância que não acontece (R6) | fixed — `3ea483c` (decisão do autor, 2026-10-25) |
+| S3 — `render(aodToggle(this).current())` em `onCreate` (else) e em `onRestart` | Duplicated Code | `trigger/TriggerActivity.kt:38` e `:51` | A política "reler sem alternar" fica espalhada em dois ciclos de vida | fixed — `3ea483c` (decisão do autor, 2026-10-25) |
 
 ## Deferred / waived items
 <!-- DEFERRED NFRs with their homolog/prod runbook; waivers need the human's name and date. -->
