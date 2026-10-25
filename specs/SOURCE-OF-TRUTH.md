@@ -42,6 +42,9 @@ ao toque, e um gatilho que o usuário mapeia a um botão físico. Ferramenta pes
 
 - App Kotlin nativo para Wear OS, com build via Gradle (wrapper `./gradlew`).
 - Comandos de verificação: `.claude/skills/task-verify/SKILL.md` → "Commands by subproject".
+- CI (`.github/workflows/ci.yml`, job `build-check`) em runner do GitHub (`ubuntu-latest`): JDK 17 e o L2
+  do app (`ktlintCheck detekt lintDebug testDebugUnitTest test assembleRelease`, release sem assinatura) e o
+  `verify-archived-gates` do kit, em toda PR para `dev` e `main`.
 
 ## Arquitetura
 

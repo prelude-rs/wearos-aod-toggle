@@ -13,7 +13,8 @@ on:
 
 jobs:
   build-check:
-    runs-on: self-hosted
+    # Runner do GitHub: a prelude-rs não tem runner self-hosted (o kit assume os da ForSellers).
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
         with:
@@ -46,6 +47,21 @@ jobs:
           if present tests/check-no-residue.sh; then
             bash tests/check-no-residue.sh begin | sed 's/^export //' >> "$GITHUB_ENV"
           fi
+
+      - name: JDK 17 (app Android)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Gradle (cache)
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: L2 do app (task-verify) — lint, detekt, testes, build de release
+        # A imagem ubuntu-latest traz o Android SDK (ANDROID_HOME). A release sai sem assinatura aqui: a
+        # keystore da prelude-rs só existe na máquina do autor (app/build.gradle.kts assina só se as quatro
+        # propriedades aodtoggle.keystore.* existirem).
+        run: ./gradlew --no-daemon ktlintCheck detekt lintDebug testDebugUnitTest test assembleRelease
 
       - name: Runner (para medição)
         run: |
