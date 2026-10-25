@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": []
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/require-approved-spec.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

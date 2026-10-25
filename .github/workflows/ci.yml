@@ -1,0 +1,205 @@
+name: CI
+
+# Produces the `build-check` status the org rulesets (dev-staging, main-master) require: one job, in steps.
+# Pure-bash repo → self-hosted runner. The portable checks (shellcheck, spec-layout doctrine, plan authorization,
+# epic closing, plugin no-drift, archived gates, SoT lint) are steps of their own; the kit's behaviour suites run
+# as one parallel batch, tests/lib/ci-lote.sh, which tests/lib/ci-mapa.txt tells which suite runs where.
+# Every test step is guarded, through the one bootstrap guard the first step writes to $RUNNER_TEMP/ci-guard.sh
+# (`present`, `run_suite`): where tests/ is absent — a branch without the suite, or an adopter, which receives
+# this file but not tests/ — the step skips naming the file. "Verify archived gates" is guarded by its hook.
+on:
+  pull_request:
+    branches: [dev, main]
+
+jobs:
+  build-check:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0          # full history so verify-archived-gates can diff against the base
+
+      - name: Resíduo da rodada — begin (R7)
+        # Cria a rodada (/tmp/sdd-kit-run.XXXXXX), fotografa as entradas tmp.* e sdd-kit-tests.* da raiz de
+        # /tmp e põe TMPDIR=<rodada> no GITHUB_ENV — todos os passos seguintes herdam. O passo "Resíduo da
+        # rodada — end", último do job, reprova o que sobrar. Antes, fora de qualquer guarda, escreve a guarda
+        # de bootstrap que todo passo de teste carrega com `. "$RUNNER_TEMP/ci-guard.sh"` — a única definição:
+        #   present <arquivo>              0 se o arquivo existe; senão diz no stdout que pula e devolve 1
+        #   run_suite <arquivo> [args…]    `bash <arquivo> [args…]` só se o arquivo existe, devolvendo o código
+        #                                  dele; pulando, devolve 0. O caminho é escrito uma vez: a guarda não
+        #                                  tem como conferir um arquivo e rodar outro.
+        # Um passo que a carregue sem este ter rodado reprova no `.`, nomeando o ci-guard.sh — nunca pula calado.
+        # Para o GITHUB_ENV vai só o que o `begin` imprime; a linha de pulo de `present` vai para o stdout.
+        run: |
+          cat > "$RUNNER_TEMP/ci-guard.sh" <<'GUARD'
+          present() {
+            [ -f "$1" ] && return 0
+            echo "$1 not present on this branch yet — skipping (bootstrap)"
+            return 1
+          }
+          run_suite() {
+            present "$1" || return 0
+            bash "$@"
+          }
+          GUARD
+          . "$RUNNER_TEMP/ci-guard.sh"
+          if present tests/check-no-residue.sh; then
+            bash tests/check-no-residue.sh begin | sed 's/^export //' >> "$GITHUB_ENV"
+          fi
+
+      - name: Runner (para medição)
+        run: |
+          echo "runner=$RUNNER_NAME host=$(hostname) cpus=$(nproc) os=$(. /etc/os-release && echo "$PRETTY_NAME")"
+          uptime || true
+
+      - name: Install shellcheck
+        # Works on any runner: no sudo. Use the one present, else the official static release.
+        run: |
+          set -euo pipefail
+          if command -v shellcheck >/dev/null; then shellcheck --version | sed -n 2p; exit 0; fi
+          dir="$RUNNER_TEMP/shellcheck"; mkdir -p "$dir"
+          curl -fsSL https://github.com/koalaman/shellcheck/releases/download/stable/shellcheck-stable.linux.x86_64.tar.xz \
+            | tar -xJ -C "$dir" --strip-components=1
+          echo "$dir" >> "$GITHUB_PATH"
+          "$dir/shellcheck" --version | sed -n 2p
+
+      - name: Awks de portabilidade (busybox e mawk)
+        # The hooks must run under busybox awk and mawk, and
+        # the suites' portability cases FAIL (not SKIP) under CI when either is missing. No sudo, any runner:
+        # - busybox is PINNED, the same binary on every runner: the official static 1.31.0, checked by sha256.
+        #   It reproduces the quirk that broke the gcp runners (busybox 1.30 reads `name (expr)` as a call);
+        #   1.35+ and Fedora's 1.37 accept it, so a distro busybox would pass without guarding anything.
+        # - mawk is the runner's own, else the distro package unpacked into RUNNER_TEMP: apt-get download +
+        #   dpkg-deb -x (Debian/Ubuntu) or dnf download + rpm2cpio | cpio (Fedora). Fedora's mawk (2026) has
+        #   regex intervals, which Ubuntu 22.04's (2020) lacks: only the gcp runners enforce that one.
+        run: |
+          . "$RUNNER_TEMP/ci-guard.sh" || exit 1
+          set -euo pipefail
+          # Kit-only (the suites live in tests/, which an adopter does not receive): skip there, never fetch.
+          present tests/test-sot-lint.sh || exit 0
+          dir="$RUNNER_TEMP/awks"; mkdir -p "$dir/bin" "$dir/pkg" "$dir/root"
+          [ "$(uname -m)" = x86_64 ] || { echo "::error::o busybox fixado é x86_64; este runner é $(uname -m)"; exit 1; }
+          BB_URL=https://busybox.net/downloads/binaries/1.31.0-defconfig-multiarch-musl/busybox-x86_64
+          BB_SHA=51fcb60efbdf3e579550e9ab893730df56b33d0cc928a2a6467bd846cdfef7d8
+          if command -v curl >/dev/null; then fetch=(curl -fsSL --retry 3 -o "$dir/bin/busybox" "$BB_URL")
+          else fetch=(python3 -c 'import sys, urllib.request; urllib.request.urlretrieve(sys.argv[1], sys.argv[2])' "$BB_URL" "$dir/bin/busybox"); fi
+          "${fetch[@]}" || { echo "::error::não baixei o busybox fixado de $BB_URL"; exit 1; }
+          echo "$BB_SHA  $dir/bin/busybox" | sha256sum -c --quiet - \
+            || { echo "::error::sha256 do busybox baixado não confere com o fixado"; exit 1; }
+          chmod +x "$dir/bin/busybox"
+          echo "$dir/bin" >> "$GITHUB_PATH"; export PATH="$dir/bin:$PATH"
+          if ! command -v mawk >/dev/null; then
+            if command -v apt-get >/dev/null && command -v dpkg-deb >/dev/null; then
+              ( cd "$dir/pkg" && apt-get download mawk ) && dpkg-deb -x "$dir"/pkg/mawk_*.deb "$dir/root"
+            elif command -v dnf >/dev/null && command -v rpm2cpio >/dev/null && command -v cpio >/dev/null; then
+              ( cd "$dir/pkg" && dnf download -q mawk ) && ( cd "$dir/root" && rpm2cpio "$dir"/pkg/mawk-*.rpm | cpio -idm --quiet )
+            else
+              echo "::error::falta mawk e o runner não tem apt-get/dpkg-deb nem dnf/rpm2cpio/cpio para buscá-lo sem root"; exit 1
+            fi
+            echo "$dir/root/usr/bin" >> "$GITHUB_PATH"; export PATH="$dir/root/usr/bin:$PATH"
+          fi
+          busybox 2>&1 | sed -n 1p        # sed, not head: head exits early and pipefail would fail the step
+          mawk -W version 2>&1 | sed -n 1p
+
+      - name: Dependências Python
+        run: |
+          . "$RUNNER_TEMP/ci-guard.sh" || exit 1
+          present tests/test_adopt_unit.py || exit 0
+          python3 -m pip install --quiet pyyaml pytest \
+            || python3 -m pip install --quiet --break-system-packages pyyaml pytest \
+            || python3 -m pip install --quiet --user --break-system-packages pyyaml pytest
+
+      - name: Shellcheck hooks + tests + forma do pipe
+        # Em paralelo; um erro em qualquer arquivo reprova o passo (xargs sai 123). Depois, a forma do pipe (R8):
+        # nenhum consumidor que sai cedo (`grep -q`) num pipe que decide um ramo sob pipefail; só no kit (o
+        # check mora em tests/, que o adotante não recebe).
+        run: |
+          . "$RUNNER_TEMP/ci-guard.sh" || exit 1
+          set -euo pipefail
+          mapfile -t files < <(ls .claude/hooks/*.sh tests/*.sh tests/lib/*.sh scripts/*.sh 2>/dev/null || true)
+          if [ "${#files[@]}" -gt 0 ]; then
+            printf '%s\0' "${files[@]}" | xargs -0 -P "$(nproc)" -n 8 shellcheck --severity=error
+          else
+            echo "no shell scripts to check"
+          fi
+          if present tests/check-pipe-early-exit.sh; then bash tests/check-pipe-early-exit.sh; fi
+
+      - name: Doutrina do spec-layout (+ report dos gates)
+        run: |
+          . "$RUNNER_TEMP/ci-guard.sh" || exit 1
+          # A guarda é a suíte do check de layout: sem ela o passo inteiro pula. Dentro, o report (sem
+          # argumento cobre specs/proposed/ e specs/active/) e o layout, este sobre as pastas de
+          # specs/archive/ TOCADAS no PR; sem base para o diff, ou sem pasta tocada, roda o default.
+          present tests/check-spec-layout.sh || exit 0
+          run_suite .claude/hooks/check-report.sh
+          tocadas="$(git diff --name-only "origin/${{ github.base_ref }}...HEAD" -- specs/archive/ \
+                     | grep -oE 'specs/archive/[^/]+/' | sort -u || true)"
+          if [ -n "$tocadas" ]; then
+            echo "pastas arquivadas tocadas neste PR:"; echo "$tocadas"
+            # shellcheck disable=SC2086
+            bash tests/check-spec-layout.sh $tocadas
+          else
+            bash tests/check-spec-layout.sh
+          fi
+
+      - name: Autorização mecânica do tasks.md (cobertura R*↔task)
+        run: |
+          . "$RUNNER_TEMP/ci-guard.sh" || exit 1
+          # O plano é autorizado pela cobertura, não por flag: specs/proposed/ e specs/active/ (default) e as
+          # pastas de specs/archive/ TOCADAS no PR. A guarda é a suíte: num adotante, que recebe o hook mas
+          # não tests/, o passo pula.
+          present tests/test-check-tasks.sh || exit 0
+          bash .claude/hooks/check-tasks.sh
+          tocadas="$(git diff --name-only "origin/${{ github.base_ref }}...HEAD" -- specs/archive/ \
+                     | grep -oE 'specs/archive/[^/]+/' | sort -u || true)"
+          if [ -n "$tocadas" ]; then
+            echo "pastas arquivadas tocadas neste PR:"; echo "$tocadas"
+            # shellcheck disable=SC2086
+            bash .claude/hooks/check-tasks.sh $tocadas
+          else
+            echo "nenhuma pasta de specs/archive/ tocada neste PR — nada a aferir lá."
+          fi
+
+      - name: Epic closing check (token nos três destinos + fog zerada)
+        run: |
+          . "$RUNNER_TEMP/ci-guard.sh" || exit 1
+          present tests/check-epic-closing.sh || exit 0
+          bash tests/check-epic-closing.sh
+
+      - name: Plugin sem drift (payload == fonte do kit)
+        run: |
+          . "$RUNNER_TEMP/ci-guard.sh" || exit 1
+          set -euo pipefail
+          # A guarda é a suíte do gerador: uma árvore sem tests/ (um adotante) pula aqui.
+          present tests/test_build_plugin.py || exit 0
+          python3 scripts/build-plugin.py check --out plugin --kit .
+
+      - name: Verify archived gates (dogfood — kit enforces its own gate artifacts)
+        # Not a test step: the archive gate is a portable hook the adopter receives and runs here too, so
+        # its guard is the hook itself, not a suite of tests/.
+        run: |
+          . "$RUNNER_TEMP/ci-guard.sh" || exit 1
+          run_suite .claude/hooks/verify-archived-gates.sh "origin/${{ github.base_ref }}"
+
+      - name: Lint de histórico do SoT
+        run: |
+          . "$RUNNER_TEMP/ci-guard.sh" || exit 1
+          # A guarda é a suíte: num adotante, que recebe o hook mas não tests/, o passo pula.
+          present tests/test-sot-lint.sh || exit 0
+          bash .claude/hooks/sot-history-lint.sh specs/SOURCE-OF-TRUTH.md
+
+      - name: Suítes do kit (lote paralelo)
+        # O mapa tests/lib/ci-mapa.txt diz o que roda, e onde sob busybox; o lote imprime o plano e o resultado.
+        run: |
+          . "$RUNNER_TEMP/ci-guard.sh" || exit 1
+          present tests/lib/ci-lote.sh || exit 0
+          bash tests/lib/ci-lote.sh roda "origin/${{ github.base_ref }}"
+
+      - name: Resíduo da rodada — end (R7)
+        # Roda mesmo com passo anterior vermelho (não num job cancelado): reprova se o TMPDIR da rodada não
+        # estiver vazio ou se a raiz de /tmp ganhou, do usuário do job, sdd-kit-tests.* ou tmp.* do kit (com
+        # .git ou spec.md "# Spec:"), listando o que sobrou. Nunca apaga nada além da própria rodada limpa.
+        if: always()
+        run: |
+          . "$RUNNER_TEMP/ci-guard.sh" || exit 1
+          run_suite tests/check-no-residue.sh end
