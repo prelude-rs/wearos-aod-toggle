@@ -48,7 +48,7 @@ Change-ID: 2026-10-aod-toggle-complication
 | 2 | design.md § Task 2 | — | DONE | 03bd75a | 17 testes JUnit |
 | 3 | design.md § Task 3 | — | BLOCKED | 8908449, 71e92bd | código e L1 verdes; falta rodar `./gradlew connectedDebugAndroidTest` no relógio (offline à noite) — premissa 1 |
 | 4 | design.md § Task 4 | VISUAL | DONE | d24848c | |
-| 5 | design.md § Task 5 | VISUAL | PENDING | | |
+| 5 | design.md § Task 5 | VISUAL | DONE | 93bef73 | |
 | 6 | design.md § Task 6 | — | PENDING | | |
 | 7 | design.md § Task 7 | VISUAL | PENDING | | |
 | 8 | design.md § Task 8 | — | PENDING | | |
