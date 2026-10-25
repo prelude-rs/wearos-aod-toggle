@@ -8,3 +8,4 @@ Insert-only, **newest first** — the legible evolution timeline. A row is appen
 
 | seq | change-id | date | PR | one-line | archive folder |
 |-----|-----------|------|----|----------|----------------|
+| 1 | 2026-10-aod-toggle-complication | 2026-10-25 | #1 | Complication e gatilho (app "AOD") que alternam o AOD do OnePlus Watch 3; pacote rs.prelude.aodtoggle | [specs/archive/2026-10-25-2026-10-aod-toggle-complication/](archive/2026-10-25-2026-10-aod-toggle-complication/) |

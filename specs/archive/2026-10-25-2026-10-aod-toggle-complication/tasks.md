@@ -61,5 +61,5 @@ Change-ID: 2026-10-aod-toggle-complication
 | 15 | design.md § Task 15 | VISUAL | DONE | c69dca7 | |
 | 16 | design.md § Task 16 | VISUAL | DONE | fdcc5b6 | |
 | 17 | design.md § Task 17 | — | DONE | e460322, 7757d1d | premissa 1 refeita no pacote novo (connectedDebugAndroidTest verde) |
-| — | validation-gate | — | PENDING | | |
-| — | sign-off → archive | — | PENDING | | |
+| — | validation-gate | — | DONE | 8ed7611 | Verdict COMPLETE; aceites do autor em 2026-10-25 |
+| — | sign-off → archive | — | DONE | | sign-off do autor em 2026-10-25; arquivado no PR #1 |
