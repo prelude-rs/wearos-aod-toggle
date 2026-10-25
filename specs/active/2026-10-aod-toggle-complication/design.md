@@ -8,13 +8,15 @@ Spec: ./spec.md
 
 ## Approach summary
 
-Um único módulo Android (`app`), Kotlin, sem UI além do retorno de ~1 s do gatilho. O núcleo é Kotlin
+Um único módulo Android (`app`), Kotlin, cuja única tela é a do gatilho (imagem + interruptor). O núcleo é Kotlin
 puro: um **porto** `AodSettings` (ler o valor, escrever o valor, saber se há permissão) e, sobre ele, a
-lógica de estado (ligado / desligado / indisponível), a alternância com releitura e o mapeamento estado →
-apresentação (cor + texto). Três bordas Android usam esse núcleo: o serviço da complication
+lógica de estado (ligado / desligado / indisponível), a alternância com releitura e os mapeamentos estado →
+apresentação (cor + texto) e estado → tela do gatilho (interruptor marcado/habilitado, texto visível). Três bordas Android usam esse núcleo: o serviço da complication
 (`SuspendingComplicationDataSourceService`, só `SMALL_IMAGE`), um `BroadcastReceiver` que recebe o toque
-na complication e uma `Activity` de lançador (o gatilho). A imagem "AOD" é um único vector drawable,
-rasterizado já tingido na cor do estado.
+na complication e uma `Activity` de lançador (o gatilho). A imagem "AOD" — com o O desenhado como relógio
+(variação N1) — é um único vector drawable de uma cor, rasterizado já tingido na cor do estado. A
+complication declara atualização periódica de 5 min, feita pelo sistema só enquanto está num mostrador
+ativo (N6/N7).
 
 Abordagens consideradas: (a) **trampolim** — toque na complication abre uma activity transparente que
 alterna e fecha (a proposta do brief); (b) **receiver** — toque dispara um broadcast que alterna sem
@@ -33,7 +35,7 @@ Decisões já assentadas no SoT (Stack): Kotlin nativo Wear OS, Gradle com wrapp
 | SDKs | `minSdk 34`, `targetSdk 34`, `compileSdk 36` | Só o OW3 (API 34) é verificado; compilar contra 36 expõe depreciações do Wear OS 6 como aviso, sem optar pelo comportamento de 36. |
 | `androidx.wear.watchface:watchface-complications-data-source-ktx` | única dependência de runtime além do `androidx.core` | Fornece `SuspendingComplicationDataSourceService`, `SmallImageComplicationData` e `ComplicationDataSourceUpdateRequester`. |
 | `androidx.core:core-ktx` | runtime | `ContextCompat`/`toBitmap` para rasterizar o vector tingido. |
-| UI do gatilho | Views simples (um layout XML: `ImageView` + `TextView`) | Zero dependência de UI; Compose traria uma árvore grande para uma tela estática. |
+| UI do gatilho | Views simples (um layout XML: `ImageView` + `TextView` + `android.widget.Switch` do tema `DeviceDefault`) | Zero dependência de UI; Compose traria uma árvore grande para uma tela com três views. O `Switch` da plataforma já segue o estilo do Wear no `DeviceDefault`. |
 | Lint | `org.jlleitschuh.gradle.ktlint` (dá `ktlintCheck`), `io.gitlab.arturbosch.detekt` (regras padrão), Android lint (padrão, `warningsAsErrors` desligado) | Os comandos já registrados em `task-verify`. |
 | Testes | JUnit 4 puro na JVM para o núcleo; um teste instrumentado (`androidx.test:runner` + `androidx.test.ext:junit`, só em `androidTest`) para o adaptador do sistema, rodado por `connectedDebugAndroidTest` | O núcleo é Kotlin puro; sem Robolectric. O teste instrumentado é o único jeito de provar cedo que o **app** (não o shell) lê e escreve a chave. |
 | Release | assinatura com keystore própria lida de `~/.gradle/gradle.properties` (nunca commitada); sem ela o release sai sem assinatura e o "Artifact smoke" do `task-verify` é registrado `DEFERRED` com o comando exato, nunca verde. Debug com `applicationIdSuffix ".debug"`: debug e release coexistem no relógio, cada um com sua própria concessão `pm grant`, sem conflito de assinatura na instalação; o debug se rotula "AOD (debug)" para não se confundir com o release na lista de apps, no editor do mostrador e no mapeamento de botão. `gradle.properties` fixa `android.injected.androidTest.leaveApksInstalledAfterRun=true`, para que `connectedDebugAndroidTest` não desinstale o debug (e sua concessão) ao terminar. R8 desligado. | Pedido do autor; R8 não compensa num app minúsculo e evita risco de keep-rule no serviço/receiver. |
@@ -58,6 +60,12 @@ interface AodSettings {               // porto: o único ponto que toca o sistem
 }
 
 data class Presentation(val tintArgb: Int, val label: String)
+
+data class TriggerView(            // o que a tela do gatilho mostra além da imagem
+    val switchChecked: Boolean,    // ligado
+    val switchEnabled: Boolean,    // falso quando indisponível (R8)
+    val showLabel: Boolean,        // texto visível só quando indisponível ("AOD unavailable")
+)
 ```
 
 Regra de estado (`AodToggle.current()`): sem permissão → `Unavailable(NO_PERMISSION)`; senão `read()`
@@ -68,17 +76,22 @@ Regra de alternância (`AodToggle.toggle()`): avalia `current()`; se indisponív
 (R5); se o relido é igual ao anterior, registra "escrita sem efeito" (N5).
 
 Apresentação (`presentationOf(state)`): `On` → âmbar `0xFFFFC107` / "AOD on"; `Off` → branco
-`0xFFFFFFFF` / "AOD off"; `Unavailable` → cinza `0xFF757575` / "AOD unavailable".
+`0xFFFFFFFF` / "AOD off"; `Unavailable` → cinza `0xFF757575` / "AOD unavailable". O `label` é o
+`contentDescription` da complication e da imagem do gatilho; na tela do gatilho ele só aparece como texto
+quando indisponível.
+
+Tela do gatilho (`triggerViewOf(state)`): `On` → marcado, habilitado, sem texto; `Off` → desmarcado,
+habilitado, sem texto; `Unavailable` → desmarcado, **desabilitado**, texto "AOD unavailable".
 
 ## Interfaces & integration points
 
 | Peça | Pacote | Papel |
 |---|---|---|
 | `SystemAodSettings` | `cc.floresta.aodtoggle.system` | Implementa o porto: `Settings.Global` `ambient_enabled` (constante `AOD_KEY`, **único ponto** onde a chave aparece — pedido do brief), `checkSelfPermission(WRITE_SECURE_SETTINGS)`. `read()` devolve `null` tanto em `SettingNotFoundException` quanto em `SecurityException` (leitura de chave oculta negada a apps com `targetSdk` ≥ 31), registrando linhas distintas; `write()` captura `SecurityException`. |
-| `AodImage` | `cc.floresta.aodtoggle.system` | Rasteriza `R.drawable.aod_text` tingido com `Presentation.tintArgb` num `Bitmap` → `Icon.createWithBitmap`. A cor fica no bitmap, não dependendo de o mostrador respeitar tint de `Icon`. |
-| `AodComplicationService` | `cc.floresta.aodtoggle.complication` | `SuspendingComplicationDataSourceService`; tipo suportado só `SMALL_IMAGE` (`SmallImageType.ICON`, que não é recortado como `PHOTO`); `contentDescription` = `Presentation.label`; `tapAction` = `PendingIntent` de broadcast explícito para `ToggleReceiver`; sem imagem ambiente (o mostrador decide); `getPreviewData` devolve o estado `Off`. |
+| `AodImage` | `cc.floresta.aodtoggle.system` | Rasteriza `R.drawable.aod_text` (arte N1, de uma cor) tingido com `Presentation.tintArgb` num `Bitmap` → `Icon.createWithBitmap`. A cor fica no bitmap, não dependendo de o mostrador respeitar tint de `Icon`. |
+| `AodComplicationService` | `cc.floresta.aodtoggle.complication` | `SuspendingComplicationDataSourceService`; tipo suportado só `SMALL_IMAGE` (`SmallImageType.ICON`, que não é recortado como `PHOTO`); `contentDescription` = `Presentation.label`; `tapAction` = `PendingIntent` de broadcast explícito para `ToggleReceiver`; sem imagem ambiente (o mostrador decide); `getPreviewData` devolve o estado `Off`. Rótulo próprio `android:label="@string/complication_name"` ("AOD Toggle"; no debug "AOD Toggle (debug)") — R12; o app continua "AOD". |
 | `ToggleReceiver` | `cc.floresta.aodtoggle.complication` | `BroadcastReceiver` não exportado: `AodToggle.toggle()` e `ComplicationDataSourceUpdateRequester.requestUpdateAll()`. |
-| `TriggerActivity` | `cc.floresta.aodtoggle.trigger` | Activity de lançador (`MAIN`/`LAUNCHER`, `noHistory`, `excludeFromRecents`): `toggle()`, mostra imagem + `label`, `requestUpdateAll()`, `finish()` após 1000 ms. |
+| `TriggerActivity` | `cc.floresta.aodtoggle.trigger` | Activity de lançador (`MAIN`/`LAUNCHER`, `noHistory`, `excludeFromRecents`, `launchMode="singleTop"`). Ao ser aberta (`onCreate` sem estado salvo) e a cada nova abertura com ela no topo (`onNewIntent`, botão pressionado de novo): `toggle()`, `render(state)`, `requestUpdateAll()`. `render` aplica `AodImage` + `triggerViewOf(state)` (posição e habilitação do interruptor, texto visível só se indisponível). Clique no interruptor (`setOnClickListener`, não `OnCheckedChangeListener`, para que o `render` programático não dispare alternância): `toggle()`, `render` do estado relido, `requestUpdateAll()`. Não se fecha sozinha: sai com o botão ou deslizando (`noHistory` a remove da pilha). Em recriação por configuração (`savedInstanceState != null`) só lê e renderiza o estado atual, sem alternar. |
 
 Manifesto: `<uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS"
 tools:ignore="ProtectedPermissions"/>` (única permissão; o `tools:ignore` silencia o erro do lint
@@ -88,9 +101,18 @@ tools:ignore="ProtectedPermissions"/>` (única permissão; o `tools:ignore` sile
 registra receiver dinâmico). `android:exported`: serviço `true` (o sistema faz o bind), activity de
 lançador `true`, receiver `false`. Serviço com `android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER"`,
 intent-filter `android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST`, meta-data
-`SUPPORTED_TYPES = SMALL_IMAGE` e `UPDATE_PERIOD_SECONDS = 0`; `uses-feature android.hardware.type.watch`;
-`com.google.android.wearable.standalone = true`. Ícone de lançador: ícone adaptativo com o vector "AOD"
-âmbar sobre fundo escuro.
+`SUPPORTED_TYPES = SMALL_IMAGE` e `UPDATE_PERIOD_SECONDS = 300` (N6/N7); `uses-feature android.hardware.type.watch`;
+`com.google.android.wearable.standalone = true`. Ícone de lançador (variação R3 escolhida pelo autor):
+ícone adaptativo com **fundo transparente** (`@android:color/transparent`) e, no primeiro plano, um aro
+circular cinza `#3A3A3A` e a arte N1 em âmbar dentro dele, nas proporções da prévia R3 (aro de espessura
+6 e raio 47, arte em escala 0,62, num quadro de 100) reduzidas ao círculo visível do ícone adaptativo
+(72 dp de 108 dp); a camada monocromática repete o primeiro plano.
+
+Arte N1 (`aod_text.xml`, viewport 100×100, tudo branco para receber tint): "A" e "D" com os caminhos de
+hoje deslocados 6 unidades para fora (A −6, D +6) e centrados na linha (y 35–65); o O é um anel
+(`strokeWidth` 3,6, raio do traço 17,2, centro 51,50 — diâmetro externo 1,25× a altura das letras), um
+ponteiro de horas (ângulo 35°, comprimento 8,9, espessura 4,05) e um de minutos (270°, comprimento 13,3,
+espessura 3,04), pontas arredondadas, e um ponto central de raio 2,15. Valores medidos na prévia escolhida.
 
 Logs: tag única `AodToggle`, `Log.w` só nos casos de falha (indisponível por permissão, por chave, escrita
 sem efeito). O núcleo recebe um `(String) -> Unit` para registrar, para continuar Kotlin puro.
@@ -99,9 +121,9 @@ sem efeito). O núcleo recebe um `(String) -> Unit` para registrar, para continu
 
 | Seam (onde) | Existente / novo | O que se observa através dele | Req IDs |
 |---|---|---|---|
-| API pública do núcleo `cc.floresta.aodtoggle.core` (`AodToggle.current()`, `AodToggle.toggle()`, `presentationOf()`), com um `AodSettings` falso | novo | Estado derivado de permissão/valor/chave ausente; escrita feita ou não; estado relido após escrita sem efeito; cor e texto por estado; linha de log por falha | R1, R2, R3, R5, R6, R8, R9, N5 |
+| API pública do núcleo `cc.floresta.aodtoggle.core` (`AodToggle.current()`, `AodToggle.toggle()`, `presentationOf()`, `triggerViewOf()`), com um `AodSettings` falso | novo | Estado derivado de permissão/valor/chave ausente; escrita feita ou não; estado relido após escrita sem efeito; cor e texto por estado; interruptor marcado/habilitado e texto visível por estado; linha de log por falha | R1, R2, R3, R5, R6, R7, R8, R9, N5 |
 | `SystemAodSettings` num teste instrumentado (`connectedDebugAndroidTest`) | novo | O app, com a permissão concedida pelo próprio teste, lê a chave, escreve o oposto, relê o novo valor e restaura o original; `hasWritePermission()` reflete a concessão | R2, R4 |
-| O relógio real (lista manual) | existente | Comportamento ponta a ponta: mostrador, Configurações, botão, latência, permissões do APK, logcat, ausência de trabalho em segundo plano | R1–R8, R10, N1, N4–N8 |
+| O relógio real (lista manual) | existente | Comportamento ponta a ponta: mostrador, Configurações, botão, interruptor, nome no seletor, latência, permissões do APK, logcat, atualizações periódicas (`dumpsys batterystats`) | R1–R8, R10, R12, N1, N4–N7 |
 
 **Justificativa dos seams novos:** o núcleo é o seam mais alto que alcança a lógica de estado sem um
 aparelho; as bordas Android são finas e verificadas no relógio (R10). O teste instrumentado do
@@ -133,30 +155,32 @@ N/A — a spec declara que não há superfície heurística.
 | R4 | `ToggleReceiver` → `AodToggle.toggle()` → `requestUpdateAll()` |
 | R5 | Releitura em `AodToggle.toggle()` |
 | R6 | `toggle()` não escreve quando indisponível; reavalia e o receiver redesenha |
-| R7 | `TriggerActivity` (lançador) + `AodImage` + `label` + `requestUpdateAll()` + `finish()` em 1000 ms |
-| R8 | Mesmo caminho de R7 com `toggle()` devolvendo indisponível sem escrever |
+| R7 | `TriggerActivity` (lançador, `singleTop`) + `AodImage` + `triggerViewOf` + clique no `Switch` → `toggle()` + `requestUpdateAll()` |
+| R8 | Mesmo caminho de R7 com `toggle()` devolvendo indisponível sem escrever; `triggerViewOf` desabilita o interruptor e mostra "AOD unavailable" |
 | R9 | Testes JUnit 4 do núcleo (`app/src/test`) |
 | R10 | `docs/manual-checklist.md`, executada e registrada no `evidence.md` |
 | R11 | `README.md` |
+| R12 | `android:label="@string/complication_name"` no serviço ("AOD Toggle") |
 
 ## NFR mechanisms
 
 | NFR | Por construção | Por teste |
 |---|---|---|
-| N1 (≤ 1 s) | Toque → broadcast (sem janela) → escrita síncrona de uma chave → `requestUpdateAll()`; gatilho mostra o resultado assim que `toggle()` retorna. O tempo entre `requestUpdateAll()` e o redesenho é do sistema e do mostrador, não do app (premissa 2). | Lista manual: gravação/cronômetro nos dois mostradores. |
+| N1 (≤ 1 s) | Toque → broadcast (sem janela) → escrita síncrona de uma chave → `requestUpdateAll()`; gatilho e interruptor mostram o resultado assim que `toggle()` retorna. O tempo entre `requestUpdateAll()` e o redesenho é do sistema e do mostrador, não do app (premissa 2). | Lista manual: gravação/cronômetro nos dois mostradores. |
 | N2 | — (sem meta) | — |
 | N3 | Sem dados de tenant, sem rede. | Coberto por N4. |
 | N4 | Manifesto declara só `WRITE_SECURE_SETTINGS` e remove (`tools:node="remove"`) a `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` injetada pelo `androidx.core`; o manifesto mesclado é conferido na Task 1. | `aapt dump permissions` do APK de release, na lista manual e no fechamento da Task 1. |
 | N5 | Falhas passam pelo log do núcleo → `Log.w("AodToggle", …)`; caminho feliz não registra. | Testes do núcleo (log chamado só nas falhas) + `adb logcat -s AodToggle` na lista manual. |
-| N6 | `UPDATE_PERIOD_SECONDS = 0`; nenhum serviço em primeiro plano, alarme, job ou observer. | `dumpsys alarm` / `dumpsys jobscheduler` na lista manual. |
-| N7 | Consequência aceita de N6. | Lista manual registra quando a complication acompanha uma mudança feita em Configurações. |
-| N8 | `finish()` agendado em 1000 ms. | Lista manual (cronômetro). |
+| N6 | `UPDATE_PERIOD_SECONDS = 300`: o sistema chama `onComplicationRequest` (ler + rasterizar) a cada 5 min só enquanto a complication está num mostrador ativo; nenhum serviço em primeiro plano, alarme, job ou observer próprio. Medido antes da reabertura com período 0: 0 acionamentos em 4 min, processo em cache. | Lista manual: `dumpsys alarm` / `dumpsys jobscheduler`; `dumpsys batterystats --reset`, ~1 h com a complication no mostrador (≤ ~12 acionamentos/h, CPU desprezível) e ~1 h sem ela (0). |
+| N7 | O mesmo período de N6. | Lista manual: mudar o AOD em Configurações, tela ligada, cronometrar até a complication acompanhar (≤ ~5 min). |
+| N8 | Retirado (spec reaberta em 2026-10-25). | — |
 
 ## Failure modes & rollout
 
 | Falha | Degradação |
 |---|---|
-| Sem `pm grant` | Complication cinza; gatilho mostra "AOD unavailable" e fecha; log `NO_PERMISSION`. |
+| Sem `pm grant` | Complication cinza; gatilho mostra a imagem cinza, "AOD unavailable" e o interruptor desabilitado; log `NO_PERMISSION`. |
+| O sistema espaça a atualização periódica além de 5 min | N7 não se cumpre; risco da spec, medido na lista manual. |
 | Chave ausente (sistema mudou) | Idem, log `KEY_MISSING`. |
 | Leitura negada ao app (`SecurityException` por chave oculta, `targetSdk` ≥ 31) | Tratada como chave ausente: indisponível, log próprio; nenhum componente quebra. Verificado no relógio na Task 3 — se acontecer, a alternância é inviável e a spec é reaberta (decisão do autor para chave inviável). |
 | Escrita aceita mas sem efeito | Mostra o estado relido (o real); log "escrita sem efeito". |
@@ -172,7 +196,11 @@ exige novo `pm grant`.
 | Decisão | Opção não tomada | Por quê | ADR? |
 |---|---|---|---|
 | Toque na complication via `BroadcastReceiver` | Activity trampolim (brief) | Sem janela piscando, menos peças, mais rápido (N1). | Não — fácil de reverter. |
-| Retorno do gatilho com Views | Compose for Wear | Uma tela estática não justifica a árvore de dependências. | Não — fácil de reverter. |
+| Tela do gatilho com Views + `android.widget.Switch` | Compose for Wear (`ToggleChip`/`SwitchButton`) | Três views não justificam a árvore de dependências; o `Switch` do `DeviceDefault` já tem o visual do sistema. | Não — fácil de reverter. |
+| Clique no interruptor via `setOnClickListener` | `OnCheckedChangeListener` | O `render` programático muda `isChecked`; com o listener de mudança, ele dispararia uma alternância a cada render. | Não. |
+| `launchMode="singleTop"` + `onNewIntent` alterna | Instância nova a cada pressão | Pressionar o botão com a tela aberta alterna de novo na mesma tela, sem empilhar instâncias. | Não. |
+| Atualização periódica de 300 s | Observer de `Settings`; serviço permanente | O mostrador não pede dados ao acender a tela (medido); observer só vive com o processo, que fica em cache; serviço permanente contraria N6. | Não. |
+| Ícone adaptativo com fundo transparente e aro `#3A3A3A` | Fundo `#121212` (antes); ícone legado não adaptativo | Escolha do autor (R3); o adaptativo mantém a máscara redonda do lançador. | Não. |
 | Um vector + tint rasterizado em bitmap | Três vectors; bitmap de texto em runtime | Um asset só; a cor vai no bitmap, sem depender do mostrador respeitar tint. | Não — fácil de reverter. |
 | Sem imagem ambiente | Contorno cinza / ocultar | O mostrador já tem suas regras de ambiente. | Não. |
 | `minSdk 34` / `targetSdk 34` / `compileSdk 36` | min 30; target 36 | Só o OW3 é verificado; 36 compila para expor depreciações. | Não. |
@@ -202,9 +230,11 @@ exige novo `pm grant`.
 - `minSdk 34`, `targetSdk 34`, `compileSdk 36`; toolchain JDK 17.
 - Chave do AOD: `Settings.Global` `ambient_enabled` (1 = ligado), escrita só em `SystemAodSettings`, constante `AOD_KEY`.
 - Cores: ligado `#FFC107`, desligado `#FFFFFF`, indisponível `#757575`.
-- Textos: "AOD on", "AOD off", "AOD unavailable".
-- Retorno do gatilho: 1000 ms.
-- Tipo de complication: só `SMALL_IMAGE` (`ICON`); `UPDATE_PERIOD_SECONDS = 0`.
+- Textos: "AOD on", "AOD off", "AOD unavailable" (`contentDescription`; na tela do gatilho só "AOD unavailable" aparece como texto); rótulo do interruptor "AOD".
+- Nome da complication no seletor: "AOD Toggle" (debug: "AOD Toggle (debug)"); nome do app: "AOD" (debug: "AOD (debug)").
+- Tela do gatilho: não se fecha sozinha.
+- Tipo de complication: só `SMALL_IMAGE` (`ICON`); `UPDATE_PERIOD_SECONDS = 300`.
+- Arte: variação N1 (valores em "Interfaces & integration points"); ícone: variação R3, aro `#3A3A3A`, fundo transparente.
 - Única permissão pedida: `android.permission.WRITE_SECURE_SETTINGS`.
 - Tag de log: `AodToggle`; log só em falha.
 - Dependências de runtime: só `watchface-complications-data-source-ktx` e `core-ktx`.
@@ -215,7 +245,9 @@ exige novo `pm grant`.
 - Janela de corrida entre `hasWritePermission()` e `write()` (permissão revogada no meio) — Task 3.
 - O mostrador recebe `Icon` de bitmap e não recorta nem retinge — Task 5 (lista manual da Task 9).
 - O `PendingIntent` do toque é explícito, imutável e o receiver não é exportado — Task 6.
-- O gatilho fecha mesmo se a activity for pausada antes dos 1000 ms (`noHistory`) — Task 7.
+- O `render` programático do interruptor não dispara alternância; o clique alterna exatamente uma vez — Task 13.
+- `onNewIntent` (botão com a tela aberta) alterna; recriação por configuração não alterna — Task 13.
+- Fundo do ícone realmente transparente no lançador da OnePlus (sem disco de fundo imposto pelo sistema) — Task 11 (revisão visual).
 - O manifesto mesclado não ganha permissões de dependências — Task 1.
 - O redesenho da complication após `requestUpdateAll()` pode passar de 1 s em algum mostrador (premissa 2): medido de ponta a ponta; falha de N1 nesse mostrador, dispensável só no `validation-gate` — Task 9 (item de N1).
 
@@ -285,3 +317,38 @@ exige novo `pm grant`.
 - [ ] Cabeçalho: a lista roda sobre o **release** `cc.floresta.aodtoggle` (rótulo "AOD"); o debug é desinstalado antes, para haver um só provedor e um só app "AOD" no relógio.
 - [ ] **Primeiro item:** concessão `pm grant` ao release e leitura/escrita da chave pelo app (risco da spec).
 - [ ] Itens para R1–R8 e N1, N4–N8, em dois mostradores (Gravity + o segundo achado), com colunas resultado/observação, prontos para copiar no `evidence.md`.
+
+<!-- Tasks 10–14: reabertura do Gate 1 em 2026-10-25 (spec reaprovada). As Tasks 1–9 ficam como foram executadas. -->
+
+### Task 10: Mapeamento da tela do gatilho no núcleo (test-first)
+**Refs:** R7, R8, R9
+**Files:** Modify `app/src/main/java/cc/floresta/aodtoggle/core/*.kt`, `app/src/test/java/cc/floresta/aodtoggle/core/*Test.kt`.
+- [ ] Testes primeiro: `triggerViewOf(On)` = marcado, habilitado, sem texto; `Off` = desmarcado, habilitado, sem texto; `Unavailable(NO_PERMISSION)` e `Unavailable(KEY_MISSING)` = desmarcado, desabilitado, com texto.
+- [ ] Implementar `TriggerView` e `triggerViewOf` até verde.
+
+### Task 11: Arte N1 e ícone R3
+**Refs:** R1
+**Visual:** sim
+**Files:** Modify `app/src/main/res/drawable/aod_text.xml`, `app/src/main/res/drawable/ic_launcher_foreground.xml`, `app/src/main/res/mipmap-anydpi/ic_launcher.xml`, `ic_launcher_round.xml`; remover `values/ic_launcher_background.xml` se ficar sem uso.
+- [ ] `aod_text.xml` com a arte N1 (valores de "Interfaces & integration points"), de uma cor, sem mudar `AodImage`.
+- [ ] Ícone adaptativo: fundo `@android:color/transparent`; primeiro plano com aro `#3A3A3A` e arte N1 âmbar nas proporções R3, dentro do círculo visível; monocromático = primeiro plano.
+
+### Task 12: Nome no seletor e atualização periódica
+**Refs:** R12, N6, N7
+**Visual:** sim
+**Files:** Modify `AndroidManifest.xml`, `app/src/main/res/values/strings.xml`, `app/src/debug/res/values/strings.xml`.
+- [ ] Serviço com `android:label="@string/complication_name"`: "AOD Toggle" no main, "AOD Toggle (debug)" no debug.
+- [ ] `UPDATE_PERIOD_SECONDS = 300`.
+
+### Task 13: Tela do gatilho com interruptor
+**Refs:** R7, R8
+**Visual:** sim
+**Files:** Modify `app/src/main/java/cc/floresta/aodtoggle/trigger/TriggerActivity.kt`, `app/src/main/res/layout/activity_trigger.xml`, `AndroidManifest.xml`, `app/src/main/res/values/strings.xml`.
+- [ ] Layout: imagem em cima, `Switch` rotulado "AOD" abaixo, texto "AOD unavailable" visível só quando indisponível; centrado para tela redonda.
+- [ ] Activity: `singleTop`; alterna em `onCreate` sem estado salvo e em `onNewIntent`; clique no `Switch` alterna; `render` via `triggerViewOf`; `requestUpdateAll()` após cada alternância; sem `finish()` agendado.
+
+### Task 14: README e lista manual da reabertura
+**Refs:** R10, R11
+**Files:** Modify `README.md`, `docs/manual-checklist.md`.
+- [ ] README: a tela do gatilho (alterna ao abrir, interruptor, sai com o botão) e o nome "AOD Toggle" no seletor; o aviso de bateria da OnePlus ao adicionar a complication.
+- [ ] Lista: itens novos para R7/R8 (interruptor; indisponível desabilitado; `onNewIntent`), R12 (nome no seletor), N1 do interruptor, N6 (`batterystats` com e sem a complication no mostrador), N7 (tempo até acompanhar uma mudança em Configurações); retirar N8/T5; atualizar a tabela de cobertura.
