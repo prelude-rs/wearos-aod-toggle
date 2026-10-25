@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:gravity="center"
     android:orientation="vertical"
-    android:paddingHorizontal="48dp"
+    android:paddingHorizontal="32dp"
     android:paddingVertical="24dp">
 
     <ImageView
@@ -27,7 +27,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:gravity="center"
+        android:maxLines="1"
         android:textColor="@android:color/white"
-        android:textSize="18sp"
+        android:textSize="14sp"
         android:visibility="gone" />
 </LinearLayout>
