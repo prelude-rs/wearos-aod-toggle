@@ -29,7 +29,7 @@ instalado por sideload e assinado com a keystore da organização prelude-rs. Re
 - Verificado no relógio em dois mostradores (Gravity e "Chic").
 - **Repositório:** público; `dev` aceita só PR com squash e `main` só PR com merge commit, ambos sem
   force-push nem exclusão (rulesets do repositório). PR para `main` só passa vindo da `dev` deste
-  repositório: o workflow `PR origin check` (`pull_request_target`, roda a cópia da `main`) é check
+  repositório: o workflow `PR origin check` (`pull_request_target`, roda a cópia do branch padrão, a `dev`) é check
   obrigatório no ruleset `main`.
 
 ## Propósito
@@ -44,7 +44,8 @@ ao toque, e um gatilho que o usuário mapeia a um botão físico. Ferramenta pes
 - Comandos de verificação: `.claude/skills/task-verify/SKILL.md` → "Commands by subproject".
 - CI (`.github/workflows/ci.yml`, job `build-check`) em runner do GitHub (`ubuntu-latest`): JDK 17 e o L2
   do app (`ktlintCheck detekt lintDebug testDebugUnitTest test assembleRelease`, release sem assinatura) e o
-  `verify-archived-gates` do kit, em toda PR para `dev` e `main`.
+  `verify-archived-gates` do kit, em toda PR para `dev` e `main`; também em push na `dev` (cada merge),
+  que grava o cache do Gradle lido pelas PRs (sem o `verify-archived-gates`, que precisa da base da PR).
 
 ## Arquitetura
 
