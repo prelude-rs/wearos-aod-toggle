@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Aro cinza e arte N1 em âmbar (prévia de ícone nº 3), reduzidos a 72/108 para caber no círculo
+     visível do ícone adaptativo. A arte duplica a de aod_text.xml: um vector drawable não referencia
+     os caminhos de outro. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+    <group
+        android:pivotX="50"
+        android:pivotY="50"
+        android:scaleX="0.6667"
+        android:scaleY="0.6667">
+        <path
+            android:pathData="M3,50 A47,47 0 1 0 97,50 A47,47 0 1 0 3,50 Z"
+            android:strokeColor="#FF3A3A3A"
+            android:strokeWidth="6" />
+        <group
+            android:pivotX="50"
+            android:pivotY="50"
+            android:scaleX="0.62"
+            android:scaleY="0.62">
+            <group android:translateX="-6">
+                <path
+                    android:fillColor="#FFFFC107"
+                    android:fillType="evenOdd"
+                    android:pathData="M9,65 L18,35 L26,35 L35,65 L27.5,65 L25.8,59 L18.2,59 L16.5,65 Z M19.8,53 L24.2,53 L22,44.5 Z" />
+            </group>
+            <group android:translateX="7.5">
+                <path
+                    android:fillColor="#FFFFC107"
+                    android:fillType="evenOdd"
+                    android:pathData="M67,35 H76 A15,15 0 0 1 76,65 H67 Z M74,42 V58 H76 A8,8 0 0 0 76,42 Z" />
+            </group>
+            <path
+                android:pathData="M34.05,50 A16.95,16.95 0 1 0 67.95,50 A16.95,16.95 0 1 0 34.05,50 Z"
+                android:strokeColor="#FFFFC107"
+                android:strokeWidth="3.6" />
+            <path
+                android:pathData="M51,50 L56.105,42.71"
+                android:strokeColor="#FFFFC107"
+                android:strokeLineCap="round"
+                android:strokeWidth="4.05" />
+            <path
+                android:pathData="M51,50 L37.7,50"
+                android:strokeColor="#FFFFC107"
+                android:strokeLineCap="round"
+                android:strokeWidth="3.04" />
+            <path
+                android:fillColor="#FFFFC107"
+                android:pathData="M48.85,50 A2.15,2.15 0 1 0 53.15,50 A2.15,2.15 0 1 0 48.85,50 Z" />
+        </group>
+    </group>
+</vector>

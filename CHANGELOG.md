@@ -9,3 +9,7 @@ Regras: `spec-layout` → "Changelog de release".
 **Ledger anterior a este arquivo:** seq ≤ 0
 
 ## [Unreleased]
+
+### Added
+
+- Complication "AOD Toggle" e gatilho "AOD" mapeável a um botão, que alternam o Always-On Display do OnePlus Watch 3 (seq 1, #1)
