@@ -174,6 +174,7 @@ Walk inverso sobre `git diff e53f3e0 HEAD` (48 arquivos). Motivação de cada gr
 | R17 | **Aceito por este gate:** o código cumpre a spec (R6) e o design está desatualizado em `ToggleReceiver`/mapa de R6; a reescrita do SoT segue o código |
 | R24 | **Aceitável.** A spec não fixa o deslocamento do D; o ajuste foi pedido e conferido pelo autor no relógio. O design fica com +6; o SoT segue o código (+7,5) |
 | R25 | **Precisa de confirmação explícita no sign-off.** Muda o critério de medida que a própria spec fixa para N6 ("~1 h sem ela") para 25 min. O resultado (0 acionamentos, 0 mAh, contra ~3–4 esperados no ritmo da fase 1) separa os casos, e a decisão é do autor; registrado em "Deferred / waived items" |
+| R26 | 15, 16, Standards | Sem segunda revisão de branch inteiro depois da revisão final: as Tasks 15 e 16 (um desenho e uma linha da lista), o conserto de T4, o ajuste do D e o refactor S1–S3 passaram só por revisão de task (ou do controlador) e smoke no relógio | Mudanças pequenas e isoladas, cada uma revisada e verificada no aparelho | Um achado que só a visão do branch inteiro pegaria |
 
 ## Rulings
 <!-- Cada decisão tomada na execução sem o humano (o ledger do SP é apagado no fim; o registro mora aqui).
