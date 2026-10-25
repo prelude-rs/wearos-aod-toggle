@@ -83,6 +83,7 @@ Preview: <command of the Dev-run premise used>
 | R16 | 11 | Escala do aro do ícone mantida em 72/108 (valor do design), conferida na revisão visual | Revisão final: o aro encosta na máscara | Um ajuste de escala |
 | R17 | 5, 6 | O texto do design para `ToggleReceiver` e o mapa de R6 continua divergindo do código (R10); o validation-gate aceita a divergência e a reescrita do SoT segue o código | Revisão final, Minor 6; editar o design exigiria nova rodada do consistency-gate | Texto do SoT |
 | R18 | 15 | A Task 15 também ajusta o item F1 da lista manual: "arte N1 dentro do aro, em branco, âmbar e cinza (R1)" | Aviso W6 da rodada 7, aceito na Gate 1.5 | Uma linha da lista |
+| R19 | 15, 16 | A Task 15 (aro na complication) foi substituída pela Task 16 (aro retirado); o conteúdo de antes da Task 15 é o de `f68fa1b` | Aviso W6 da rodada 8, aceito na Gate 1.5; editar o design custaria a rodada 9 | Nenhum: o bloco da Task 15 fica só como histórico |
 
 ## Out-of-scope respected
 <!-- Confirm each out-of-scope item was not implemented. -->
