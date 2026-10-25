@@ -53,7 +53,7 @@ Change-ID: 2026-10-aod-toggle-complication
 | 7 | design.md § Task 7 | VISUAL | DONE | 2532a8c | |
 | 8 | design.md § Task 8 | — | DONE | 89d0f7f | |
 | 9 | design.md § Task 9 | — | DONE | 590b8eb, f9f0865 | |
-| 10 | design.md § Task 10 | — | PENDING | | |
+| 10 | design.md § Task 10 | — | DONE | ff80266 | |
 | 11 | design.md § Task 11 | VISUAL | PENDING | | |
 | 12 | design.md § Task 12 | VISUAL | PENDING | | |
 | 13 | design.md § Task 13 | VISUAL | PENDING | | |
