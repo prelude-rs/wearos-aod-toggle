@@ -48,6 +48,13 @@ Preview: <command of the Dev-run premise used>
 | Round | Item (human feedback) | Fix (commit) | L1 |
 |-------|-----------------------|--------------|----|
 
+### Rodada pós-aprovação (2026-10-25, lista manual no pacote `rs.prelude.aodtoggle`)
+
+| Item | Achado | Commit do conserto | L1 | Conferido pelo autor |
+|---|---|---|---|---|
+| T4 / R8 | "AOD unavailable" quebrava em duas linhas e a segunda era cortada na tela redonda | `9735f06` (14sp, uma linha, padding lateral 32dp) | verde | sim — texto inteiro |
+| Arte / ícone | O "D" parecia mais perto do "O" que o "A" | `e35156d` (D +7,5; ruling R24) | verde | sim — "ficou harmônico" |
+
 ## Requirement walk
 | Req ID | Implemented (file/symbol) | Tested (test name) | Verified how | Result |
 |--------|---------------------------|--------------------|--------------|--------|
@@ -89,6 +96,7 @@ Preview: <command of the Dev-run premise used>
 | R21 | 17 | O título de `specs/SOURCE-OF-TRUTH.md` não é renomeado nesta change | A reescrita do SoT no arquivamento só toca as seções declaradas na spec (regra 5(b)), e o título não está entre elas; aviso W8 da rodada 9 | Título antigo no SoT até uma change futura |
 | R22 | 17 | O prefixo das propriedades de assinatura continua `aodtoggle.keystore.*` (o autor já atualizou o `~/.gradle/gradle.properties` para `~/IAM/prelude-rs-release.jks`, alias `prelude`); o exemplo de `keytool` do README passa a `~/prelude-rs-release.jks`, alias `prelude`, com `-dname "CN=prelude-rs, O=prelude-rs, C=BR"` | Aviso W9 da rodada 9 | Ajuste de documentação |
 | R23 | 17 | `connectedDebugAndroidTest` roda com o relógio conectado pelo nome mDNS, não por `IP:porta` | Com `IP:porta` o AGP falha a tarefa com o teste verde (erro de arnês, não da premissa — regra da lista, item 0a) | Uma linha de README se outro executor tropeçar |
+| R24 | 11, 16 | "D" deslocado +7,5 (não +6, como diz o design) em `aod_text.xml` e `ic_launcher_foreground.xml` | Ajuste óptico pedido pelo autor no relógio: a haste reta do D parecia mais perto do anel que a diagonal do A; conferido "harmônico" pelo autor em 2026-10-25 | O design fica com o valor antigo (+6) |
 
 ## Out-of-scope respected
 <!-- Confirm each out-of-scope item was not implemented. -->
