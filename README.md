@@ -81,7 +81,7 @@ The grant survives reinstalling with the same signature. It is lost if you unins
 
 ## Troubleshooting
 
-- Grey complication or "AOD unavailable": the permission is missing. Run the `pm grant` command above, then tap the complication.
+- Grey complication or "AOD unavailable": usually the permission is missing, but it can also mean the setting key does not exist or the read was denied. Run `adb logcat -s AodToggle` to see which. If it is the permission, run the `pm grant` command above, then tap the complication.
 - Install is rejected: the APK is probably unsigned. Check the four `aodtoggle.keystore.*` entries and rebuild.
 - Look at the logs:
   ```sh
