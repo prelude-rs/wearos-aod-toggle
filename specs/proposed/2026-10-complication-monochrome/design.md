@@ -82,7 +82,7 @@ N/A — a spec declara que não há superfície heurística.
 | Req ID | Design element that satisfies it |
 |--------|----------------------------------|
 | R1 | Manifesto declara os dois tipos; `onComplicationRequest` responde no tipo pedido |
-| R2 | `monochromeFormOf(On) = SOLID` → `aod_text` como `Icon` de recurso |
+| R2 | `monochromeFormOf(On) = SOLID` → `aod_text` rasterizado em bitmap branco (`monochromeIcon`) |
 | R3 | `monochromeFormOf(Off) = HOLLOW` → `aod_mono_hollow` |
 | R4 | `monochromeFormOf(Unavailable) = STRUCK` → `aod_mono_struck` (clip-path da folga + tarja) |
 | R5 | Ramo `SMALL_IMAGE` intocado (`AodImage.icon` e `presentationOf`) — preservação |
