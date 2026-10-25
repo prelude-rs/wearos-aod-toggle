@@ -33,8 +33,8 @@ Decisões já assentadas no SoT (Stack): Kotlin nativo Wear OS, Gradle com wrapp
 | `androidx.core:core-ktx` | runtime | `ContextCompat`/`toBitmap` para rasterizar o vector tingido. |
 | UI do gatilho | Views simples (um layout XML: `ImageView` + `TextView`) | Zero dependência de UI; Compose traria uma árvore grande para uma tela estática. |
 | Lint | `org.jlleitschuh.gradle.ktlint` (dá `ktlintCheck`), `io.gitlab.arturbosch.detekt` (regras padrão), Android lint (padrão, `warningsAsErrors` desligado) | Os comandos já registrados em `task-verify`. |
-| Testes | JUnit 4 puro na JVM | O núcleo é Kotlin puro; sem Robolectric, sem Android no classpath de teste. |
-| Release | assinatura com keystore própria lida de `~/.gradle/gradle.properties` (nunca commitada); sem ela o release sai sem assinatura. R8 desligado. | Pedido do autor; R8 não compensa num app minúsculo e evita risco de keep-rule no serviço/receiver. |
+| Testes | JUnit 4 puro na JVM para o núcleo; um teste instrumentado (`androidx.test:runner` + `androidx.test.ext:junit`, só em `androidTest`) para o adaptador do sistema, rodado por `connectedDebugAndroidTest` | O núcleo é Kotlin puro; sem Robolectric. O teste instrumentado é o único jeito de provar cedo que o **app** (não o shell) lê e escreve a chave. |
+| Release | assinatura com keystore própria lida de `~/.gradle/gradle.properties` (nunca commitada); sem ela o release sai sem assinatura e o "Artifact smoke" do `task-verify` é registrado `DEFERRED` com o comando exato, nunca verde. Debug com `applicationIdSuffix ".debug"`: debug e release coexistem no relógio, cada um com sua própria concessão `pm grant`, sem conflito de assinatura na instalação. R8 desligado. | Pedido do autor; R8 não compensa num app minúsculo e evita risco de keep-rule no serviço/receiver. |
 
 ## Data modeling
 
@@ -51,7 +51,7 @@ sealed interface AodState {
 
 interface AodSettings {               // porto: o único ponto que toca o sistema
     fun hasWritePermission(): Boolean
-    fun read(): Int?                  // null = chave ausente
+    fun read(): Int?                  // null = chave ausente ou leitura negada
     fun write(value: Int)
 }
 
@@ -98,10 +98,13 @@ sem efeito). O núcleo recebe um `(String) -> Unit` para registrar, para continu
 | Seam (onde) | Existente / novo | O que se observa através dele | Req IDs |
 |---|---|---|---|
 | API pública do núcleo `cc.floresta.aodtoggle.core` (`AodToggle.current()`, `AodToggle.toggle()`, `presentationOf()`), com um `AodSettings` falso | novo | Estado derivado de permissão/valor/chave ausente; escrita feita ou não; estado relido após escrita sem efeito; cor e texto por estado; linha de log por falha | R1, R2, R3, R5, R6, R8, R9, N5 |
+| `SystemAodSettings` num teste instrumentado (`connectedDebugAndroidTest`) | novo | O app, com a permissão concedida e revogada pelo próprio teste, lê a chave, escreve o oposto, relê o novo valor e restaura o original; `hasWritePermission()` acompanha concessão e revogação | R2, R3, R4 |
 | O relógio real (lista manual) | existente | Comportamento ponta a ponta: mostrador, Configurações, botão, latência, permissões do APK, logcat, ausência de trabalho em segundo plano | R1–R8, R10, N1, N4–N8 |
 
 **Justificativa dos seams novos:** o núcleo é o seam mais alto que alcança a lógica de estado sem um
-aparelho; as bordas Android são finas e verificadas no relógio (R10).
+aparelho; as bordas Android são finas e verificadas no relógio (R10). O teste instrumentado do
+adaptador é o único ponto em que o app — não o shell — exercita a chave de verdade, e roda na Task 3,
+antes das bordas existirem (premissa 1).
 
 ## Superfície heurística: código medido
 
@@ -110,8 +113,8 @@ N/A — a spec declara que não há superfície heurística.
 ## Dev-run premise
 
 - Launch: com o relógio conectado via adb (README), `./gradlew installDebug`, depois
-  `adb shell pm grant cc.floresta.aodtoggle android.permission.WRITE_SECURE_SETTINGS`; abrir o gatilho com
-  `adb shell am start -n cc.floresta.aodtoggle/.trigger.TriggerActivity` e colocar a complication no
+  `adb shell pm grant cc.floresta.aodtoggle.debug android.permission.WRITE_SECURE_SETTINGS`; abrir o gatilho com
+  `adb shell am start -n cc.floresta.aodtoggle.debug/cc.floresta.aodtoggle.trigger.TriggerActivity` e colocar a complication no
   Gravity pelo editor do mostrador.
 - Mock/dev-flag strategy: nenhuma — não há backend; a única dependência externa é o próprio sistema do
   relógio, exercido de verdade. O estado indisponível se reproduz com `adb shell pm revoke` da mesma
@@ -172,7 +175,9 @@ exige novo `pm grant`.
 | Sem imagem ambiente | Contorno cinza / ocultar | O mostrador já tem suas regras de ambiente. | Não. |
 | `minSdk 34` / `targetSdk 34` / `compileSdk 36` | min 30; target 36 | Só o OW3 é verificado; 36 compila para expor depreciações. | Não. |
 | JUnit 4 puro | JUnit 5; Robolectric | Núcleo Kotlin puro; nada a ganhar com o peso extra. | Não. |
-| Keystore própria fora do repo; R8 desligado | Chave de debug; R8 ligado | Pedido do autor; a assinatura é exigida pelo "Artifact smoke" do `task-verify` (instala o APK de release), não por um R*. | Não. |
+| Keystore própria fora do repo; R8 desligado | Chave de debug; R8 ligado | Pedido do autor (escopo aceito no Gate 1.5). O "Artifact smoke" do `task-verify` exige um release **assinado**; a keystore própria é preferência do autor, não exigência. | Não. |
+| `applicationIdSuffix ".debug"` no debug | Desinstalar o debug antes do smoke | Sem conflito de assinatura (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`) e sem perder a concessão de cada variante. | Não. |
+| Teste instrumentado do adaptador na Task 3 | Verificar só pelo gatilho, no fim da Task 7 | Prova a premissa 1 antes de construir o resto; repetível. | Não. |
 | CI do repositório não ganha build Gradle nesta change | Adicionar | Fora da spec aprovada; o repositório não tem remoto ainda. | Não. |
 
 ## Assumptions
@@ -180,13 +185,18 @@ exige novo `pm grant`.
 1. O app (não só o shell) consegue ler e escrever `Settings.Global` `ambient_enabled` com `targetSdk 34` e
    `WRITE_SECURE_SETTINGS` concedida por `pm grant`. Contexto da spec: a descoberta provou só o shell, e o
    risco "A concessão `pm grant` … ao app pode se comportar diferente do shell" cobre a escrita; a leitura
-   entra no mesmo risco. Verificada no relógio na Task 3, antes do resto.
+   entra no mesmo risco. Verificada no relógio na Task 3 (teste instrumentado), antes do resto. **Se
+   falhar** — leitura ou escrita negada ao app —, a alternância é inviável: a execução para e a spec é
+   reaberta (decisão do autor no Gate 1.5, a mesma tomada para chave inviável).
 2. O redesenho após `requestUpdateAll()` cabe em N1 (≤ 1 s); o atraso é do sistema e do mostrador.
-   Verificada pelo item de N1 da lista manual; se falhar, a decisão é do autor (ver Review Focus).
+   Verificada pelo item de N1 da lista manual. **Se passar de 1 s num mostrador** por causa do
+   redesenho do mostrador, registra-se como lacuna conhecida no `evidence.md` (mostrador, tempo medido),
+   aceita, e não como falha do app — decisão do autor no Gate 1.5. Se o atraso estiver no app (antes de
+   `requestUpdateAll()`), é falha de N1.
 
 ## Global Constraints
 
-- applicationId e pacote raiz: `cc.floresta.aodtoggle`.
+- applicationId e pacote raiz: `cc.floresta.aodtoggle`; debug: `cc.floresta.aodtoggle.debug`.
 - `minSdk 34`, `targetSdk 34`, `compileSdk 36`; toolchain JDK 17.
 - Chave do AOD: `Settings.Global` `ambient_enabled` (1 = ligado), escrita só em `SystemAodSettings`, constante `AOD_KEY`.
 - Cores: ligado `#FFC107`, desligado `#FFFFFF`, indisponível `#757575`.
@@ -205,7 +215,7 @@ exige novo `pm grant`.
 - O `PendingIntent` do toque é explícito, imutável e o receiver não é exportado — Task 6.
 - O gatilho fecha mesmo se a activity for pausada antes dos 1000 ms (`noHistory`) — Task 7.
 - O manifesto mesclado não ganha permissões de dependências — Task 1.
-- O redesenho da complication após `requestUpdateAll()` pode passar de 1 s em algum mostrador (premissa 2) — Task 9 (item de N1).
+- O redesenho da complication após `requestUpdateAll()` pode passar de 1 s em algum mostrador (premissa 2): a medida separa o tempo do app do tempo do mostrador — Task 9 (item de N1).
 
 ## Decomposição
 
@@ -218,7 +228,8 @@ exige novo `pm grant`.
 **Files:** Create `settings.gradle.kts`, `build.gradle.kts`, `gradle/libs.versions.toml`, `gradle/wrapper/*`, `gradlew`, `app/build.gradle.kts`, `app/src/main/AndroidManifest.xml`, `.editorconfig`, `config/detekt/detekt.yml` (se preciso).
 - [ ] Resolver as últimas versões estáveis (AGP, Kotlin, ktlint-gradle, detekt, wear complications, core-ktx, JUnit 4) compatíveis com JDK 17 e fixá-las no catálogo.
 - [ ] Manifesto com `WRITE_SECURE_SETTINGS` (`tools:ignore="ProtectedPermissions"`), remoção da `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, `uses-feature watch`, `standalone`.
-- [ ] Assinatura de release lida de propriedades Gradle (`aodtoggle.keystore.*`), ausente → sem assinatura; R8 desligado.
+- [ ] Assinatura de release lida de propriedades Gradle (`aodtoggle.keystore.*`), ausente → sem assinatura; R8 desligado; debug com `applicationIdSuffix ".debug"`.
+- [ ] Dependências de teste instrumentado (`androidx.test:runner`, `androidx.test.ext:junit`) e `testInstrumentationRunner`.
 - [ ] Provar `./gradlew ktlintCheck detekt lintDebug testDebugUnitTest assembleRelease` verde e `aapt dump permissions` listando só `WRITE_SECURE_SETTINGS`.
 
 ### Task 2: Núcleo de estado, alternância e apresentação (test-first)
@@ -229,10 +240,11 @@ exige novo `pm grant`.
 
 ### Task 3: Adaptador do sistema
 **Refs:** R2, R3
-**Files:** Create `app/src/main/java/cc/floresta/aodtoggle/system/SystemAodSettings.kt`.
-- [ ] `AOD_KEY = "ambient_enabled"` em `Settings.Global`; `read()` nulo em `SettingNotFoundException`; `hasWritePermission()` via `checkSelfPermission`; `write()` captura `SecurityException` e registra.
+**Files:** Create `app/src/main/java/cc/floresta/aodtoggle/system/SystemAodSettings.kt`, `app/src/androidTest/java/cc/floresta/aodtoggle/system/SystemAodSettingsTest.kt`.
+- [ ] `AOD_KEY = "ambient_enabled"` em `Settings.Global`; `read()` nulo em `SettingNotFoundException` **e** em `SecurityException` (leitura negada), cada caso com sua linha de log; `hasWritePermission()` via `checkSelfPermission`; `write()` captura `SecurityException` e registra.
 - [ ] Fábrica que liga o núcleo ao `Log.w("AodToggle", …)`.
-- [ ] **No relógio, antes das demais tasks:** instalar, `pm grant`, e confirmar que o app lê `ambient_enabled`, escreve-o (o AOD muda em Configurações) e que `checkSelfPermission` reporta a concessão (e a revogação). Falha aqui para a execução e leva à reabertura da spec.
+- [ ] **Teste instrumentado primeiro** (`app/src/androidTest/java/cc/floresta/aodtoggle/system/SystemAodSettingsTest.kt`): concede e revoga `WRITE_SECURE_SETTINGS` ao próprio pacote via `UiAutomation.executeShellCommand("pm grant|revoke …")`; com a concessão, `hasWritePermission()` é verdadeiro, `read()` devolve 0 ou 1, `write()` do oposto é relido, e o valor original é restaurado no `@After`; revogada, `hasWritePermission()` é falso.
+- [ ] Rodar `./gradlew connectedDebugAndroidTest` no relógio. **Falha de leitura ou escrita pelo app para a execução e leva à reabertura da spec** (premissa 1).
 
 ### Task 4: Arte "AOD" e ícone de lançador
 **Refs:** R1, R7
