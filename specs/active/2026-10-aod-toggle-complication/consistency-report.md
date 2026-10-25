@@ -14,6 +14,7 @@ Verdict: PASS
 | 6 | PASS    | 0        | 5       | 0           | 93dbb89 |
 
 - Parada após a rodada 5: Ricardo Nogueira, 2026-10-25 — continuar com teto (consertar B1 e avisos no design) — teto +1
+- Parada após a rodada 6: Ricardo Nogueira, 2026-10-25 — reabrir o Gate 1 para o aro na complication (R1) — teto +1
 
 ## Check 1 — Coverage spec → design
 sem achados

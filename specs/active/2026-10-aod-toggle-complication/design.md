@@ -113,6 +113,11 @@ hoje deslocados 6 unidades para fora (A −6, D +6) e centrados na linha (y 35�
 (`strokeWidth` 3,6, raio do traço 16,95, centro 51,50 — diâmetro externo 37,5 = 1,25× a altura das letras, 30), um
 ponteiro de horas (ângulo 35°, comprimento 8,9, espessura 4,05) e um de minutos (270°, comprimento 13,3,
 espessura 3,04), pontas arredondadas, e um ponto central de raio 2,15. Valores medidos na prévia escolhida.
+Desde a segunda reabertura (R1, 2026-10-25), esse conjunto fica dentro de um aro circular: o desenho
+inteiro de `aod_text.xml` é o aro (traço de espessura 6, raio do traço 47, centro 50,50, mesma cor branca)
+mais a arte N1 acima reduzida a 0,62 em torno do centro (50,50) — as mesmas proporções do ícone, mas tudo
+de uma cor, tingido pelo estado. A tela do gatilho usa a mesma imagem (`AodImage`), e por isso também
+mostra o aro.
 
 Logs: tag única `AodToggle`, `Log.w` só nos casos de falha (indisponível por permissão, por chave, escrita
 sem efeito). O núcleo recebe um `(String) -> Unit` para registrar, para continuar Kotlin puro.
@@ -234,7 +239,7 @@ exige novo `pm grant`.
 - Nome da complication no seletor: "AOD Toggle" (debug: "AOD Toggle (debug)"); nome do app: "AOD" (debug: "AOD (debug)").
 - Tela do gatilho: não se fecha sozinha.
 - Tipo de complication: só `SMALL_IMAGE` (`ICON`); `UPDATE_PERIOD_SECONDS = 300`.
-- Arte: variação N1 (valores em "Interfaces & integration points"); ícone: prévia de ícone nº 3, aro `#3A3A3A`, fundo transparente.
+- Arte: variação N1 dentro de um aro de uma cor (valores em "Interfaces & integration points"); ícone: prévia de ícone nº 3, aro `#3A3A3A`, fundo transparente.
 - Única permissão pedida: `android.permission.WRITE_SECURE_SETTINGS`.
 - Tag de log: `AodToggle`; log só em falha.
 - Dependências de runtime: só `watchface-complications-data-source-ktx` e `core-ktx`.
@@ -247,6 +252,7 @@ exige novo `pm grant`.
 - O `PendingIntent` do toque é explícito, imutável e o receiver não é exportado — Task 6.
 - O `render` programático do interruptor não dispara alternância; o clique alterna exatamente uma vez — Task 13.
 - `onNewIntent` (botão com a tela aberta) alterna; recriação por configuração não alterna — Task 13.
+- O aro da complication convive com a borda que o próprio mostrador desenha em volta do slot (aro duplo legível?) — Task 15 (revisão visual).
 - Fundo do ícone realmente transparente no lançador da OnePlus (sem disco de fundo imposto pelo sistema) — Task 11 (revisão visual).
 - O manifesto mesclado não ganha permissões de dependências — Task 1.
 - O redesenho da complication após `requestUpdateAll()` pode passar de 1 s em algum mostrador (premissa 2): medido de ponta a ponta; falha de N1 nesse mostrador, dispensável só no `validation-gate` — Task 9 (item de N1).
@@ -354,3 +360,12 @@ exige novo `pm grant`.
 - [ ] Lista — reescrever o "Passo"/"Esperado" dos itens existentes para os requisitos reaprovados: F1 (o seletor lista "AOD Toggle" sob o cabeçalho "AOD" — R12; arte N1), F2 (N7: com a tela ligada, a complication acompanha uma mudança feita em Configurações em ≤ ~5 min; cronometrar), T3 (R7: cada pressão alterna e mostra imagem + interruptor no novo estado; a tela fica aberta; tocar no interruptor alterna de novo; pressionar com a tela aberta alterna de novo; apagar a tela a fecha), T4 (R8: imagem cinza, "AOD unavailable", interruptor desabilitado que não responde; a tela fica aberta; a chave não muda), F9 (N1 também do toque no interruptor).
 - [ ] Lista — itens novos: N6 (`dumpsys batterystats --reset`, ~1 h **fora do carregador** com a complication no mostrador ativo → ≤ ~12 acionamentos/h do serviço e CPU desprezível; ~1 h sem ela em mostrador nenhum → 0; reconectar o adb antes de cada leitura). Retirar N8/T5. Atualizar a tabela de cobertura (R7, R8, R12, N1, N6, N7).
 - [ ] Manter a tela ligada na medida de N7: `adb shell svc power stayon true` (ou "Permanecer ativo" nas opções do desenvolvedor) e, na restauração final, `adb shell svc power stayon false`.
+
+<!-- Task 15: segunda reabertura do Gate 1 em 2026-10-25 (aro na complication; spec reaprovada). -->
+
+### Task 15: Aro na arte da complication
+**Refs:** R1
+**Visual:** sim
+**Files:** Modify `app/src/main/res/drawable/aod_text.xml`.
+- [ ] Envolver a arte N1 num grupo com escala 0,62 em torno de (50,50) e acrescentar o aro (traço 6, raio 47, centro 50,50), tudo branco para o tint; sem mudar `AodImage` nem o ícone.
+- [ ] Conferir com uma renderização de prévia (SVG equivalente → PNG) que o aro não é cortado pelo quadro de 100.
