@@ -43,10 +43,12 @@ Human decision (if red): todos os 4 comandos aceitos como known-red — reposit�
      When this file is (re)written (e.g. by the validation-gate), CARRY FORWARD every existing
      approval line (both forms, per change and per task) and every round row — regenerating from
      the template without them destroys approvals. -->
-Preview: <command of the Dev-run premise used>
+Preview: release assinado instalado por `adb install -r app/build/outputs/apk/release/app-release.apk` + `pm grant` (o autor operou o relógio; mesmo app da premissa de Dev-run, variante release)
 
 | Round | Item (human feedback) | Fix (commit) | L1 |
 |-------|-----------------------|--------------|----|
+| 1 | Disco cinza atrás da complication | Nenhum: é o fundo do slot `SMALL_IMAGE` desenhado pelo mostrador, não do app (bitmap transparente) | — |
+| 1 | Aro na complication deixou o "AOD" pequeno | Reabertura do Gate 1: Task 15 (aro) e Task 16 (aro retirado, `fdcc5b6`) | verde |
 
 ### Rodada pós-aprovação (2026-10-25, lista manual no pacote `rs.prelude.aodtoggle`)
 
@@ -54,6 +56,37 @@ Preview: <command of the Dev-run premise used>
 |---|---|---|---|---|
 | T4 / R8 | "AOD unavailable" quebrava em duas linhas e a segunda era cortada na tela redonda | `9735f06` (14sp, uma linha, padding lateral 32dp) | verde | sim — texto inteiro |
 | Arte / ícone | O "D" parecia mais perto do "O" que o "A" | `e35156d` (D +7,5; ruling R24) | verde | sim — "ficou harmônico" |
+
+## Lista manual (R10) — resultados
+
+Executada em 2026-10-25 por Ricardo Nogueira (operação no relógio) e pelo agente (adb), sobre o release
+`rs.prelude.aodtoggle` assinado com a keystore da prelude-rs (`O=prelude-rs`), no OnePlus Watch 3
+(OPWE242, Android 14, build `OPWE242_11_A.165`). Mostrador 1: Gravity (`com.oplus.wearos.watchface.gravity`).
+Mostrador 2: "Chic" no OHealth (`com.oplus.wearos.watchface.zhenmo.style`, slots 1–3 aceitam `SMALL_IMAGE`).
+Os itens marcados (pacote antigo) foram feitos antes da Task 17 sobre `cc.floresta.aodtoggle` e
+refeitos no pacote novo onde indicado.
+
+| Item | Verifica | Resultado | Observação |
+|---|---|---|---|
+| 0a | Premissa 1 | OK | `connectedDebugAndroidTest` 1/1 no pacote antigo (manhã) e no novo (14:17, serial mDNS — R23) |
+| 0b | R4 | OK | só `package:rs.prelude.aodtoggle`; `cc.floresta.aodtoggle` desinstalado |
+| 0c | R4 | OK | Gravity: `ambient_enabled` 0 → 1 após toque; `doze_enabled` acompanhou (pacote antigo 13:16; novo 14:18→14:21) |
+| F1 | R1, R12 | OK (Gravity e Chic) | "AOD Toggle" sob o cabeçalho "AOD"; arte N1 sem aro, branca / âmbar / cinza; o mostrador desenha um disco cinza atrás do slot (não é do app) |
+| F2 / T8 | N7 | OK | no carregador com `svc power stayon true`: mudança em Configurações às 14:39:15, complication acompanhou às 14:41:40 (2 min 25 s, inclui o tempo de aviso do autor); `stayon` desligado depois |
+| F3 | R3 | OK | sem permissão, cinza ao recarregar o mostrador, sem toque |
+| F4 | R6 | OK | com a complication cinza, `pm grant` e toque: ficou âmbar; `ambient_enabled` ficou 1 (não alternou) |
+| F5 | R4 | OK (Gravity e Chic) | Configurações, pulso abaixado (esmaecida × apagada) e cor acompanham nos dois sentidos |
+| F6 | R5 | n/a aqui | coberto pelo teste de unidade (R9) |
+| F7 | R7 | OK | ao sair do gatilho a complication já mostra o estado final |
+| F8 | N1 | OK (Gravity e Chic) | < 1 s do toque até a nova cor (observação do autor) |
+| F9 | N1 | OK | < 1 s do botão e do interruptor até o novo estado |
+| T1 | N4 | OK | `aapt dump permissions`: só `android.permission.WRITE_SECURE_SETTINGS`; `UPDATE_PERIOD_SECONDS` = 0x12c |
+| T2 | N5 | OK | sem permissão: linhas `AodToggle: AOD indisponivel: sem permissao WRITE_SECURE_SETTINGS`; caminho feliz sem linhas; chave ausente e escrita sem efeito cobertas pelos testes de unidade |
+| T3 | R7 | OK | botão mapeado alterna e mostra imagem + interruptor; interruptor alterna; botão com a tela aberta alterna; apagar/acender mostra o estado atual |
+| T4 | R8 | OK após conserto | imagem cinza, "AOD unavailable" (cortado na 1ª vez → `9735f06`), interruptor desabilitado sem resposta; chave não mudou |
+| T6 | N6 | OK | `dumpsys alarm` 0, `dumpsys jobscheduler` 0 linhas do pacote (16:11) |
+| T7 fase 1 | N6 | OK | 14:44:45 → 15:45:17 fora do carregador, complication no Gravity, sem toques: `AodComplicationService` launches 8 (≤ ~12), CPU do app 0,66 s, processo em cache 1h00m33s |
+| T7 fase 2 | N6 | pendente | iniciada 16:11:28 sem a complication em mostrador nenhum (esperado 0 acionamentos) |
 
 ## Requirement walk
 | Req ID | Implemented (file/symbol) | Tested (test name) | Verified how | Result |
