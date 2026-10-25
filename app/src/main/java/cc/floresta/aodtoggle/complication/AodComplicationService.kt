@@ -11,15 +11,20 @@ import androidx.wear.watchface.complications.data.SmallImageType
 import androidx.wear.watchface.complications.datasource.ComplicationRequest
 import androidx.wear.watchface.complications.datasource.SuspendingComplicationDataSourceService
 import cc.floresta.aodtoggle.core.AodState
+import cc.floresta.aodtoggle.core.TapAction
 import cc.floresta.aodtoggle.core.presentationOf
+import cc.floresta.aodtoggle.core.tapActionFor
 import cc.floresta.aodtoggle.system.AodImage
 import cc.floresta.aodtoggle.system.aodToggle
 
-/** Complication `SMALL_IMAGE` que mostra o estado atual do AOD. O toque alterna o AOD via [ToggleReceiver]. */
+/**
+ * Complication `SMALL_IMAGE` que mostra o estado atual do AOD. O toque alterna o AOD quando disponível;
+ * quando indisponível só redesenha (R6), via [ToggleReceiver].
+ */
 class AodComplicationService : SuspendingComplicationDataSourceService() {
     override suspend fun onComplicationRequest(request: ComplicationRequest): ComplicationData? =
         if (request.complicationType == ComplicationType.SMALL_IMAGE) {
-            dataFor(aodToggle(this).current(), tapAction())
+            aodToggle(this).current().let { state -> dataFor(state, tapIntentFor(tapActionFor(state))) }
         } else {
             null
         }
@@ -28,11 +33,12 @@ class AodComplicationService : SuspendingComplicationDataSourceService() {
     override fun getPreviewData(type: ComplicationType): ComplicationData? =
         if (type == ComplicationType.SMALL_IMAGE) dataFor(AodState.Off, null) else null
 
-    private fun tapAction(): PendingIntent =
+    // Ação distinta por TapAction: os Intents não são filterEquals e os dois PendingIntents coexistem.
+    private fun tapIntentFor(action: TapAction): PendingIntent =
         PendingIntent.getBroadcast(
             this,
             0,
-            Intent(this, ToggleReceiver::class.java),
+            Intent(this, ToggleReceiver::class.java).setAction(ToggleReceiver.actionName(action)),
             PendingIntent.FLAG_IMMUTABLE,
         )
 
