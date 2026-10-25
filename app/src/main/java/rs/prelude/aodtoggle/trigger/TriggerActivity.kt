@@ -35,7 +35,7 @@ class TriggerActivity : Activity() {
         if (savedInstanceState == null) {
             toggleAndRender()
         } else {
-            render(aodToggle(this).current())
+            renderCurrent()
         }
     }
 
@@ -48,12 +48,16 @@ class TriggerActivity : Activity() {
     /** A plataforma mantém `noHistory` ao dormir: ao reacordar, só relê o estado (não alterna). */
     override fun onRestart() {
         super.onRestart()
-        render(aodToggle(this).current())
+        renderCurrent()
     }
 
     private fun toggleAndRender() {
         render(aodToggle(this).toggle())
         requestComplicationRefresh(this)
+    }
+
+    private fun renderCurrent() {
+        render(aodToggle(this).current())
     }
 
     private fun render(state: AodState) {

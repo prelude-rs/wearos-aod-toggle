@@ -55,7 +55,7 @@
         </service>
 
         <receiver
-            android:name=".complication.ToggleReceiver"
+            android:name=".complication.ComplicationTapReceiver"
             android:exported="false" />
     </application>
 </manifest>

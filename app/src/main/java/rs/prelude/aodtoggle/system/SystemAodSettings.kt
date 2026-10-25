@@ -11,10 +11,14 @@ import rs.prelude.aodtoggle.core.AodToggle
 private const val LOG_TAG = "AodToggle"
 internal const val AOD_KEY = "ambient_enabled"
 
+private fun logWarning(message: String) {
+    Log.w(LOG_TAG, message)
+}
+
 /** Implementa o porto sobre `Settings.Global`; único lugar onde [AOD_KEY] aparece. */
 class SystemAodSettings(
     context: Context,
-    private val log: (String) -> Unit = { Log.w(LOG_TAG, it) },
+    private val log: (String) -> Unit = ::logWarning,
 ) : AodSettings {
     private val context = context.applicationContext
 
@@ -43,4 +47,4 @@ class SystemAodSettings(
 }
 
 /** Liga o núcleo ao sistema e ao logcat. */
-fun aodToggle(context: Context): AodToggle = AodToggle(SystemAodSettings(context)) { Log.w(LOG_TAG, it) }
+fun aodToggle(context: Context): AodToggle = AodToggle(SystemAodSettings(context), ::logWarning)

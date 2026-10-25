@@ -19,7 +19,7 @@ import rs.prelude.aodtoggle.system.aodToggle
 
 /**
  * Complication `SMALL_IMAGE` que mostra o estado atual do AOD. O toque alterna o AOD quando disponível;
- * quando indisponível só redesenha (R6), via [ToggleReceiver].
+ * quando indisponível só redesenha (R6), via [ComplicationTapReceiver].
  */
 class AodComplicationService : SuspendingComplicationDataSourceService() {
     override suspend fun onComplicationRequest(request: ComplicationRequest): ComplicationData? =
@@ -38,7 +38,7 @@ class AodComplicationService : SuspendingComplicationDataSourceService() {
         PendingIntent.getBroadcast(
             this,
             0,
-            Intent(this, ToggleReceiver::class.java).setAction(ToggleReceiver.actionName(action)),
+            Intent(this, ComplicationTapReceiver::class.java).setAction(ComplicationTapReceiver.actionName(action)),
             PendingIntent.FLAG_IMMUTABLE,
         )
 
