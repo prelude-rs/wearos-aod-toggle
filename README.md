@@ -75,9 +75,11 @@ The grant survives reinstalling with the same signature. It is lost if you unins
 
 ## Use it
 
-**Complication.** On the watch, edit the watch face, pick an image slot and choose "AOD". The icon is amber when the AOD is on, white when it is off, and grey when unavailable (permission not granted, or the setting does not exist). Tapping it toggles the AOD. Tapping it while grey re-checks the permission and redraws, without toggling.
+**Complication.** On the watch, edit the watch face, pick an image slot and choose "AOD Toggle" (listed under the "AOD" header; the debug build is "AOD Toggle (debug)"). The app itself stays "AOD". The image is the text "AOD" with the O drawn as a clock: white when the AOD is off, amber when it is on, and grey when unavailable (permission not granted, or the setting does not exist). Tapping it toggles the AOD. Tapping it while grey re-checks the permission and redraws, without toggling. The system refreshes it every 5 minutes while the watch face is active, so a change made in Settings shows up within about 5 minutes with the screen on.
 
-**Button.** The "AOD" app appears in the watch's app list. Each time it opens it toggles the AOD, shows the new state for about a second ("AOD on", "AOD off", or a grey "AOD unavailable") and closes itself. To use it from a hardware button, pick the "AOD" app in the watch's button customisation setting. The exact menu path varies by watch and software version.
+**Battery warning.** When you add the complication, OnePlus shows a generic "High battery usage ... 1 to 1.5 days" warning. It is a system-wide notice that appears for any complication (Maps shows it too), not a measurement of this app. The real cost is checked in item N6 of `docs/manual-checklist.md` (`dumpsys batterystats`: at most about 12 service triggers per hour and negligible CPU).
+
+**Button.** The "AOD" app appears in the watch's app list. Each time it opens it toggles the AOD and shows the image for the new state with a switch labelled "AOD" in the new position. The screen stays open until you leave with the button or a swipe; tapping the switch toggles again, and pressing the button again while the screen is open also toggles again. If the watch turns the screen off or returns to the face on its own, the screen closes and the next opening toggles again. When toggling is unavailable it shows the grey image, "AOD unavailable" and a disabled switch that does not respond. To use it from a hardware button, pick the "AOD" app in the watch's button customisation setting. The exact menu path varies by watch and software version.
 
 ## Troubleshooting
 
