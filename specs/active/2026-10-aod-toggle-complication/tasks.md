@@ -60,5 +60,6 @@ Change-ID: 2026-10-aod-toggle-complication
 | 14 | design.md § Task 14 | — | DONE | 1a90718, d42405c | |
 | 15 | design.md § Task 15 | VISUAL | DONE | c69dca7 | |
 | 16 | design.md § Task 16 | VISUAL | DONE | fdcc5b6 | |
+| 17 | design.md § Task 17 | — | PENDING | | |
 | — | validation-gate | — | PENDING | | |
 | — | sign-off → archive | — | PENDING | | |

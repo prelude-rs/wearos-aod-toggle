@@ -38,11 +38,11 @@ Decisões já assentadas no SoT (Stack): Kotlin nativo Wear OS, Gradle com wrapp
 | UI do gatilho | Views simples (um layout XML: `ImageView` + `TextView` + `android.widget.Switch` do tema `DeviceDefault`) | Zero dependência de UI; Compose traria uma árvore grande para uma tela com três views. O `Switch` da plataforma já segue o estilo do Wear no `DeviceDefault`. |
 | Lint | `org.jlleitschuh.gradle.ktlint` (dá `ktlintCheck`), `io.gitlab.arturbosch.detekt` (regras padrão), Android lint (padrão, `warningsAsErrors` desligado) | Os comandos já registrados em `task-verify`. |
 | Testes | JUnit 4 puro na JVM para o núcleo; um teste instrumentado (`androidx.test:runner` + `androidx.test.ext:junit`, só em `androidTest`) para o adaptador do sistema, rodado por `connectedDebugAndroidTest` | O núcleo é Kotlin puro; sem Robolectric. O teste instrumentado é o único jeito de provar cedo que o **app** (não o shell) lê e escreve a chave. |
-| Release | assinatura com keystore própria lida de `~/.gradle/gradle.properties` (nunca commitada); sem ela o release sai sem assinatura e o "Artifact smoke" do `task-verify` é registrado `DEFERRED` com o comando exato, nunca verde. Debug com `applicationIdSuffix ".debug"`: debug e release coexistem no relógio, cada um com sua própria concessão `pm grant`, sem conflito de assinatura na instalação; o debug se rotula "AOD (debug)" para não se confundir com o release na lista de apps, no editor do mostrador e no mapeamento de botão. `gradle.properties` fixa `android.injected.androidTest.leaveApksInstalledAfterRun=true`, para que `connectedDebugAndroidTest` não desinstale o debug (e sua concessão) ao terminar. R8 desligado. | Pedido do autor; R8 não compensa num app minúsculo e evita risco de keep-rule no serviço/receiver. |
+| Release | assinatura com a keystore da organização prelude-rs (`~/prelude-rs-release.jks`, alias `prelude`, criada pelo autor em 2026-10-25; substitui a keystore pessoal anterior) lida de `~/.gradle/gradle.properties` (nunca commitada); sem ela o release sai sem assinatura e o "Artifact smoke" do `task-verify` é registrado `DEFERRED` com o comando exato, nunca verde. Debug com `applicationIdSuffix ".debug"`: debug e release coexistem no relógio, cada um com sua própria concessão `pm grant`, sem conflito de assinatura na instalação; o debug se rotula "AOD (debug)" para não se confundir com o release na lista de apps, no editor do mostrador e no mapeamento de botão. `gradle.properties` fixa `android.injected.androidTest.leaveApksInstalledAfterRun=true`, para que `connectedDebugAndroidTest` não desinstale o debug (e sua concessão) ao terminar. R8 desligado. | Pedido do autor; R8 não compensa num app minúsculo e evita risco de keep-rule no serviço/receiver. |
 
 ## Data modeling
 
-Sem persistência, sem tenant (app pessoal). Tipos do núcleo (`cc.floresta.aodtoggle.core`):
+Sem persistência, sem tenant (app pessoal). Tipos do núcleo (`rs.prelude.aodtoggle.core`):
 
 ```kotlin
 enum class UnavailableReason { NO_PERMISSION, KEY_MISSING }
@@ -87,11 +87,11 @@ habilitado, sem texto; `Unavailable` → desmarcado, **desabilitado**, texto "AO
 
 | Peça | Pacote | Papel |
 |---|---|---|
-| `SystemAodSettings` | `cc.floresta.aodtoggle.system` | Implementa o porto: `Settings.Global` `ambient_enabled` (constante `AOD_KEY`, **único ponto** onde a chave aparece — pedido do brief), `checkSelfPermission(WRITE_SECURE_SETTINGS)`. `read()` devolve `null` tanto em `SettingNotFoundException` quanto em `SecurityException` (leitura de chave oculta negada a apps com `targetSdk` ≥ 31), registrando linhas distintas; `write()` captura `SecurityException`. |
-| `AodImage` | `cc.floresta.aodtoggle.system` | Rasteriza `R.drawable.aod_text` (arte N1, de uma cor) tingido com `Presentation.tintArgb` num `Bitmap` → `Icon.createWithBitmap`. A cor fica no bitmap, não dependendo de o mostrador respeitar tint de `Icon`. |
-| `AodComplicationService` | `cc.floresta.aodtoggle.complication` | `SuspendingComplicationDataSourceService`; tipo suportado só `SMALL_IMAGE` (`SmallImageType.ICON`, que não é recortado como `PHOTO`); `contentDescription` = `Presentation.label`; `tapAction` = `PendingIntent` de broadcast explícito para `ToggleReceiver`; sem imagem ambiente (o mostrador decide); `getPreviewData` devolve o estado `Off`. Rótulo próprio `android:label="@string/complication_name"` ("AOD Toggle"; no debug "AOD Toggle (debug)") — R12; o app continua "AOD". |
-| `ToggleReceiver` | `cc.floresta.aodtoggle.complication` | `BroadcastReceiver` não exportado: `AodToggle.toggle()` e `ComplicationDataSourceUpdateRequester.requestUpdateAll()`. |
-| `TriggerActivity` | `cc.floresta.aodtoggle.trigger` | Activity de lançador (`MAIN`/`LAUNCHER`, `noHistory`, `excludeFromRecents`, `launchMode="singleTop"`). Ao ser aberta (`onCreate` sem estado salvo) e a cada nova abertura com ela no topo (`onNewIntent`, botão pressionado de novo): `toggle()`, `render(state)`, `requestUpdateAll()`. `render` aplica `AodImage` + `triggerViewOf(state)` (posição e habilitação do interruptor, texto visível só se indisponível). Clique no interruptor (`setOnClickListener`, não `OnCheckedChangeListener`, para que o `render` programático não dispare alternância): `toggle()`, `render` do estado relido, `requestUpdateAll()`. Não se fecha por tempo: sai com o botão ou deslizando (`noHistory` a remove da pilha). Decisão do autor (2026-10-25): quando o relógio apaga a tela ou volta sozinho ao mostrador por inatividade, `noHistory` também a finaliza, e isso conta como "o usuário saiu" (R7); na próxima abertura ela alterna de novo. Em recriação por configuração (`savedInstanceState != null`) só lê e renderiza o estado atual, sem alternar. |
+| `SystemAodSettings` | `rs.prelude.aodtoggle.system` | Implementa o porto: `Settings.Global` `ambient_enabled` (constante `AOD_KEY`, **único ponto** onde a chave aparece — pedido do brief), `checkSelfPermission(WRITE_SECURE_SETTINGS)`. `read()` devolve `null` tanto em `SettingNotFoundException` quanto em `SecurityException` (leitura de chave oculta negada a apps com `targetSdk` ≥ 31), registrando linhas distintas; `write()` captura `SecurityException`. |
+| `AodImage` | `rs.prelude.aodtoggle.system` | Rasteriza `R.drawable.aod_text` (arte N1, de uma cor) tingido com `Presentation.tintArgb` num `Bitmap` → `Icon.createWithBitmap`. A cor fica no bitmap, não dependendo de o mostrador respeitar tint de `Icon`. |
+| `AodComplicationService` | `rs.prelude.aodtoggle.complication` | `SuspendingComplicationDataSourceService`; tipo suportado só `SMALL_IMAGE` (`SmallImageType.ICON`, que não é recortado como `PHOTO`); `contentDescription` = `Presentation.label`; `tapAction` = `PendingIntent` de broadcast explícito para `ToggleReceiver`; sem imagem ambiente (o mostrador decide); `getPreviewData` devolve o estado `Off`. Rótulo próprio `android:label="@string/complication_name"` ("AOD Toggle"; no debug "AOD Toggle (debug)") — R12; o app continua "AOD". |
+| `ToggleReceiver` | `rs.prelude.aodtoggle.complication` | `BroadcastReceiver` não exportado: `AodToggle.toggle()` e `ComplicationDataSourceUpdateRequester.requestUpdateAll()`. |
+| `TriggerActivity` | `rs.prelude.aodtoggle.trigger` | Activity de lançador (`MAIN`/`LAUNCHER`, `noHistory`, `excludeFromRecents`, `launchMode="singleTop"`). Ao ser aberta (`onCreate` sem estado salvo) e a cada nova abertura com ela no topo (`onNewIntent`, botão pressionado de novo): `toggle()`, `render(state)`, `requestUpdateAll()`. `render` aplica `AodImage` + `triggerViewOf(state)` (posição e habilitação do interruptor, texto visível só se indisponível). Clique no interruptor (`setOnClickListener`, não `OnCheckedChangeListener`, para que o `render` programático não dispare alternância): `toggle()`, `render` do estado relido, `requestUpdateAll()`. Não se fecha por tempo: sai com o botão ou deslizando (`noHistory` a remove da pilha). Decisão do autor (2026-10-25): quando o relógio apaga a tela ou volta sozinho ao mostrador por inatividade, `noHistory` também a finaliza, e isso conta como "o usuário saiu" (R7); na próxima abertura ela alterna de novo. Em recriação por configuração (`savedInstanceState != null`) só lê e renderiza o estado atual, sem alternar. |
 
 Manifesto: `<uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS"
 tools:ignore="ProtectedPermissions"/>` (única permissão; o `tools:ignore` silencia o erro do lint
@@ -124,7 +124,7 @@ sem efeito). O núcleo recebe um `(String) -> Unit` para registrar, para continu
 
 | Seam (onde) | Existente / novo | O que se observa através dele | Req IDs |
 |---|---|---|---|
-| API pública do núcleo `cc.floresta.aodtoggle.core` (`AodToggle.current()`, `AodToggle.toggle()`, `presentationOf()`, `triggerViewOf()`), com um `AodSettings` falso | novo | Estado derivado de permissão/valor/chave ausente; escrita feita ou não; estado relido após escrita sem efeito; cor e texto por estado; interruptor marcado/habilitado e texto visível por estado; linha de log por falha | R1, R2, R3, R5, R6, R7, R8, R9, N5 |
+| API pública do núcleo `rs.prelude.aodtoggle.core` (`AodToggle.current()`, `AodToggle.toggle()`, `presentationOf()`, `triggerViewOf()`), com um `AodSettings` falso | novo | Estado derivado de permissão/valor/chave ausente; escrita feita ou não; estado relido após escrita sem efeito; cor e texto por estado; interruptor marcado/habilitado e texto visível por estado; linha de log por falha | R1, R2, R3, R5, R6, R7, R8, R9, N5 |
 | `SystemAodSettings` num teste instrumentado (`connectedDebugAndroidTest`) | novo | O app, com a permissão concedida pelo próprio teste, lê a chave, escreve o oposto, relê o novo valor e restaura o original; `hasWritePermission()` reflete a concessão | R2, R4 |
 | O relógio real (lista manual) | existente | Comportamento ponta a ponta: mostrador, Configurações, botão, interruptor, nome no seletor, latência, permissões do APK, logcat, atualizações periódicas (`dumpsys batterystats`) | R1–R8, R10, R12, N1, N4–N7 |
 
@@ -140,8 +140,8 @@ N/A — a spec declara que não há superfície heurística.
 ## Dev-run premise
 
 - Launch: com o relógio conectado via adb (README), `./gradlew installDebug`, depois
-  `adb shell pm grant cc.floresta.aodtoggle.debug android.permission.WRITE_SECURE_SETTINGS`; abrir o gatilho com
-  `adb shell am start -n cc.floresta.aodtoggle.debug/cc.floresta.aodtoggle.trigger.TriggerActivity` e colocar a complication no
+  `adb shell pm grant rs.prelude.aodtoggle.debug android.permission.WRITE_SECURE_SETTINGS`; abrir o gatilho com
+  `adb shell am start -n rs.prelude.aodtoggle.debug/rs.prelude.aodtoggle.trigger.TriggerActivity` e colocar a complication no
   Gravity pelo editor do mostrador.
 - Mock/dev-flag strategy: nenhuma — não há backend; a única dependência externa é o próprio sistema do
   relógio, exercido de verdade. O estado indisponível se reproduz com `adb shell pm revoke` da mesma
@@ -229,7 +229,8 @@ exige novo `pm grant`.
 
 ## Global Constraints
 
-- applicationId e pacote raiz: `cc.floresta.aodtoggle`; debug: `cc.floresta.aodtoggle.debug`.
+- applicationId e pacote raiz: `rs.prelude.aodtoggle`; debug: `rs.prelude.aodtoggle.debug`.
+- Projeto: `wearos-aod-toggle` (repositório `git@github.com:prelude-rs/wearos-aod-toggle.git`; `rootProject.name`); até 2026-10-25 o pacote era `cc.floresta.aodtoggle` e o projeto `wearos-complication-aod-toggle`.
 - `minSdk 34`, `targetSdk 34`, `compileSdk 36`; toolchain JDK 17.
 - Chave do AOD: `Settings.Global` `ambient_enabled` (1 = ligado), escrita só em `SystemAodSettings`, constante `AOD_KEY`.
 - Cores: ligado `#FFC107`, desligado `#FFFFFF`, indisponível `#757575`.
@@ -375,3 +376,12 @@ exige novo `pm grant`.
 **Files:** Modify `app/src/main/res/drawable/aod_text.xml`, `docs/manual-checklist.md`.
 - [ ] `aod_text.xml` volta ao conteúdo de antes da Task 15 (arte N1 em escala 1, sem aro); `AodImage` e o ícone não mudam.
 - [ ] Item F1 da lista manual: "arte N1 (O em forma de relógio), sem aro, em branco, âmbar e cinza (R1)".
+
+<!-- Task 17: mudança de organização em 2026-10-25 (decisão do autor, design reaprovado): pacote, nome do projeto e assinatura. -->
+
+### Task 17: Pacote rs.prelude.aodtoggle, nome do projeto e assinatura da prelude-rs
+**Refs:** R10, R11
+**Files:** Move `app/src/{main,test,androidTest}/java/cc/floresta/aodtoggle/**` → `.../rs/prelude/aodtoggle/**`; Modify `app/build.gradle.kts` (`namespace`, `applicationId`), `settings.gradle.kts` (`rootProject.name = "wearos-aod-toggle"`), todos os `package`/`import`, `README.md`, `docs/manual-checklist.md`, `CLAUDE.md` (título).
+- [ ] Renomear pacote e applicationId para `rs.prelude.aodtoggle` (debug `rs.prelude.aodtoggle.debug`), sem mudar comportamento; nenhuma referência a `cc.floresta` fora de `specs/` e do histórico.
+- [ ] README e lista manual com o pacote novo, o repositório `prelude-rs/wearos-aod-toggle` e a keystore da prelude-rs (`~/prelude-rs-release.jks`, alias `prelude`); a lista manda desinstalar `cc.floresta.aodtoggle` antes (pacote antigo).
+- [ ] L1 verde; `connectedDebugAndroidTest` verde no relógio com o pacote novo (premissa 1 refeita); release assinado com a keystore nova (`apksigner verify --print-certs` mostra `O=prelude-rs`).
