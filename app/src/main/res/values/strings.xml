@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AOD</string>
+    <string name="complication_name">AOD Toggle</string>
+    <string name="trigger_switch_label">AOD</string>
+</resources>
