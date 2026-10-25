@@ -40,6 +40,7 @@
         <service
             android:name=".complication.AodComplicationService"
             android:exported="true"
+            android:label="@string/complication_name"
             android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
             <intent-filter>
                 <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST" />
@@ -49,7 +50,7 @@
                 android:value="SMALL_IMAGE" />
             <meta-data
                 android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
-                android:value="0" />
+                android:value="300" />
         </service>
 
         <receiver
