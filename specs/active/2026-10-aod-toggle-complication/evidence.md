@@ -24,6 +24,7 @@ Reused evidence: —
 Human decision (if red): todos os 4 comandos aceitos como known-red — repositório greenfield, sem projeto Gradle até a Task 1, que cria o projeto e prova o conjunto verde no seu estado final. Ricardo Nogueira, 2026-10-24.
 
 ## Visual checkpoints
+<!-- visual-approved: change 2026-10-aod-toggle-complication tasks 4,5,7 by Ricardo Nogueira on 2026-10-25 -->
 <!-- The visual review of the change: one review per change that has a VISUAL task, held
      after all tasks are DONE and before the validation-gate. The preview comes up by the command of
      the design's Dev-run premise; the human operates it and decides. A change with no VISUAL
