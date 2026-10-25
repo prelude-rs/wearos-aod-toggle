@@ -91,7 +91,7 @@ habilitado, sem texto; `Unavailable` → desmarcado, **desabilitado**, texto "AO
 | `AodImage` | `cc.floresta.aodtoggle.system` | Rasteriza `R.drawable.aod_text` (arte N1, de uma cor) tingido com `Presentation.tintArgb` num `Bitmap` → `Icon.createWithBitmap`. A cor fica no bitmap, não dependendo de o mostrador respeitar tint de `Icon`. |
 | `AodComplicationService` | `cc.floresta.aodtoggle.complication` | `SuspendingComplicationDataSourceService`; tipo suportado só `SMALL_IMAGE` (`SmallImageType.ICON`, que não é recortado como `PHOTO`); `contentDescription` = `Presentation.label`; `tapAction` = `PendingIntent` de broadcast explícito para `ToggleReceiver`; sem imagem ambiente (o mostrador decide); `getPreviewData` devolve o estado `Off`. Rótulo próprio `android:label="@string/complication_name"` ("AOD Toggle"; no debug "AOD Toggle (debug)") — R12; o app continua "AOD". |
 | `ToggleReceiver` | `cc.floresta.aodtoggle.complication` | `BroadcastReceiver` não exportado: `AodToggle.toggle()` e `ComplicationDataSourceUpdateRequester.requestUpdateAll()`. |
-| `TriggerActivity` | `cc.floresta.aodtoggle.trigger` | Activity de lançador (`MAIN`/`LAUNCHER`, `noHistory`, `excludeFromRecents`, `launchMode="singleTop"`). Ao ser aberta (`onCreate` sem estado salvo) e a cada nova abertura com ela no topo (`onNewIntent`, botão pressionado de novo): `toggle()`, `render(state)`, `requestUpdateAll()`. `render` aplica `AodImage` + `triggerViewOf(state)` (posição e habilitação do interruptor, texto visível só se indisponível). Clique no interruptor (`setOnClickListener`, não `OnCheckedChangeListener`, para que o `render` programático não dispare alternância): `toggle()`, `render` do estado relido, `requestUpdateAll()`. Não se fecha sozinha: sai com o botão ou deslizando (`noHistory` a remove da pilha). Em recriação por configuração (`savedInstanceState != null`) só lê e renderiza o estado atual, sem alternar. |
+| `TriggerActivity` | `cc.floresta.aodtoggle.trigger` | Activity de lançador (`MAIN`/`LAUNCHER`, `noHistory`, `excludeFromRecents`, `launchMode="singleTop"`). Ao ser aberta (`onCreate` sem estado salvo) e a cada nova abertura com ela no topo (`onNewIntent`, botão pressionado de novo): `toggle()`, `render(state)`, `requestUpdateAll()`. `render` aplica `AodImage` + `triggerViewOf(state)` (posição e habilitação do interruptor, texto visível só se indisponível). Clique no interruptor (`setOnClickListener`, não `OnCheckedChangeListener`, para que o `render` programático não dispare alternância): `toggle()`, `render` do estado relido, `requestUpdateAll()`. Não se fecha por tempo: sai com o botão ou deslizando (`noHistory` a remove da pilha). Decisão do autor (2026-10-25): quando o relógio apaga a tela ou volta sozinho ao mostrador por inatividade, `noHistory` também a finaliza, e isso conta como "o usuário saiu" (R7); na próxima abertura ela alterna de novo. Em recriação por configuração (`savedInstanceState != null`) só lê e renderiza o estado atual, sem alternar. |
 
 Manifesto: `<uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS"
 tools:ignore="ProtectedPermissions"/>` (única permissão; o `tools:ignore` silencia o erro do lint
@@ -102,15 +102,15 @@ registra receiver dinâmico). `android:exported`: serviço `true` (o sistema faz
 lançador `true`, receiver `false`. Serviço com `android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER"`,
 intent-filter `android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST`, meta-data
 `SUPPORTED_TYPES = SMALL_IMAGE` e `UPDATE_PERIOD_SECONDS = 300` (N6/N7); `uses-feature android.hardware.type.watch`;
-`com.google.android.wearable.standalone = true`. Ícone de lançador (variação R3 escolhida pelo autor):
+`com.google.android.wearable.standalone = true`. Ícone de lançador (prévia de ícone nº 3, escolhida pelo autor):
 ícone adaptativo com **fundo transparente** (`@android:color/transparent`) e, no primeiro plano, um aro
-circular cinza `#3A3A3A` e a arte N1 em âmbar dentro dele, nas proporções da prévia R3 (aro de espessura
+circular cinza `#3A3A3A` e a arte N1 em âmbar dentro dele, nas proporções da prévia de ícone nº 3 (aro de espessura
 6 e raio 47, arte em escala 0,62, num quadro de 100) reduzidas ao círculo visível do ícone adaptativo
 (72 dp de 108 dp); a camada monocromática repete o primeiro plano.
 
 Arte N1 (`aod_text.xml`, viewport 100×100, tudo branco para receber tint): "A" e "D" com os caminhos de
 hoje deslocados 6 unidades para fora (A −6, D +6) e centrados na linha (y 35–65); o O é um anel
-(`strokeWidth` 3,6, raio do traço 17,2, centro 51,50 — diâmetro externo 1,25× a altura das letras), um
+(`strokeWidth` 3,6, raio do traço 16,95, centro 51,50 — diâmetro externo 37,5 = 1,25× a altura das letras, 30), um
 ponteiro de horas (ângulo 35°, comprimento 8,9, espessura 4,05) e um de minutos (270°, comprimento 13,3,
 espessura 3,04), pontas arredondadas, e um ponto central de raio 2,15. Valores medidos na prévia escolhida.
 
@@ -200,7 +200,7 @@ exige novo `pm grant`.
 | Clique no interruptor via `setOnClickListener` | `OnCheckedChangeListener` | O `render` programático muda `isChecked`; com o listener de mudança, ele dispararia uma alternância a cada render. | Não. |
 | `launchMode="singleTop"` + `onNewIntent` alterna | Instância nova a cada pressão | Pressionar o botão com a tela aberta alterna de novo na mesma tela, sem empilhar instâncias. | Não. |
 | Atualização periódica de 300 s | Observer de `Settings`; serviço permanente | O mostrador não pede dados ao acender a tela (medido); observer só vive com o processo, que fica em cache; serviço permanente contraria N6. | Não. |
-| Ícone adaptativo com fundo transparente e aro `#3A3A3A` | Fundo `#121212` (antes); ícone legado não adaptativo | Escolha do autor (R3); o adaptativo mantém a máscara redonda do lançador. | Não. |
+| Ícone adaptativo com fundo transparente e aro `#3A3A3A` | Fundo `#121212` (antes); ícone legado não adaptativo | Escolha do autor (prévia de ícone nº 3); o adaptativo mantém a máscara redonda do lançador. | Não. |
 | Um vector + tint rasterizado em bitmap | Três vectors; bitmap de texto em runtime | Um asset só; a cor vai no bitmap, sem depender do mostrador respeitar tint. | Não — fácil de reverter. |
 | Sem imagem ambiente | Contorno cinza / ocultar | O mostrador já tem suas regras de ambiente. | Não. |
 | `minSdk 34` / `targetSdk 34` / `compileSdk 36` | min 30; target 36 | Só o OW3 é verificado; 36 compila para expor depreciações. | Não. |
@@ -234,7 +234,7 @@ exige novo `pm grant`.
 - Nome da complication no seletor: "AOD Toggle" (debug: "AOD Toggle (debug)"); nome do app: "AOD" (debug: "AOD (debug)").
 - Tela do gatilho: não se fecha sozinha.
 - Tipo de complication: só `SMALL_IMAGE` (`ICON`); `UPDATE_PERIOD_SECONDS = 300`.
-- Arte: variação N1 (valores em "Interfaces & integration points"); ícone: variação R3, aro `#3A3A3A`, fundo transparente.
+- Arte: variação N1 (valores em "Interfaces & integration points"); ícone: prévia de ícone nº 3, aro `#3A3A3A`, fundo transparente.
 - Única permissão pedida: `android.permission.WRITE_SECURE_SETTINGS`.
 - Tag de log: `AodToggle`; log só em falha.
 - Dependências de runtime: só `watchface-complications-data-source-ktx` e `core-ktx`.
@@ -326,12 +326,12 @@ exige novo `pm grant`.
 - [ ] Testes primeiro: `triggerViewOf(On)` = marcado, habilitado, sem texto; `Off` = desmarcado, habilitado, sem texto; `Unavailable(NO_PERMISSION)` e `Unavailable(KEY_MISSING)` = desmarcado, desabilitado, com texto.
 - [ ] Implementar `TriggerView` e `triggerViewOf` até verde.
 
-### Task 11: Arte N1 e ícone R3
+### Task 11: Arte N1 e ícone da prévia nº 3
 **Refs:** R1
 **Visual:** sim
 **Files:** Modify `app/src/main/res/drawable/aod_text.xml`, `app/src/main/res/drawable/ic_launcher_foreground.xml`, `app/src/main/res/mipmap-anydpi/ic_launcher.xml`, `ic_launcher_round.xml`; remover `values/ic_launcher_background.xml` se ficar sem uso.
 - [ ] `aod_text.xml` com a arte N1 (valores de "Interfaces & integration points"), de uma cor, sem mudar `AodImage`.
-- [ ] Ícone adaptativo: fundo `@android:color/transparent`; primeiro plano com aro `#3A3A3A` e arte N1 âmbar nas proporções R3, dentro do círculo visível; monocromático = primeiro plano.
+- [ ] Ícone adaptativo: fundo `@android:color/transparent`; primeiro plano com aro `#3A3A3A` e arte N1 âmbar nas proporções da prévia nº 3, dentro do círculo visível; monocromático = primeiro plano.
 
 ### Task 12: Nome no seletor e atualização periódica
 **Refs:** R12, N6, N7
@@ -351,4 +351,6 @@ exige novo `pm grant`.
 **Refs:** R10, R11
 **Files:** Modify `README.md`, `docs/manual-checklist.md`.
 - [ ] README: a tela do gatilho (alterna ao abrir, interruptor, sai com o botão) e o nome "AOD Toggle" no seletor; o aviso de bateria da OnePlus ao adicionar a complication.
-- [ ] Lista: itens novos para R7/R8 (interruptor; indisponível desabilitado; `onNewIntent`), R12 (nome no seletor), N1 do interruptor, N6 (`batterystats` com e sem a complication no mostrador), N7 (tempo até acompanhar uma mudança em Configurações); retirar N8/T5; atualizar a tabela de cobertura.
+- [ ] Lista — reescrever o "Passo"/"Esperado" dos itens existentes para os requisitos reaprovados: F1 (o seletor lista "AOD Toggle" sob o cabeçalho "AOD" — R12; arte N1), F2 (N7: com a tela ligada, a complication acompanha uma mudança feita em Configurações em ≤ ~5 min; cronometrar), T3 (R7: cada pressão alterna e mostra imagem + interruptor no novo estado; a tela fica aberta; tocar no interruptor alterna de novo; pressionar com a tela aberta alterna de novo; apagar a tela a fecha), T4 (R8: imagem cinza, "AOD unavailable", interruptor desabilitado que não responde; a tela fica aberta; a chave não muda), F9 (N1 também do toque no interruptor).
+- [ ] Lista — itens novos: N6 (`dumpsys batterystats --reset`, ~1 h **fora do carregador** com a complication no mostrador ativo → ≤ ~12 acionamentos/h do serviço e CPU desprezível; ~1 h sem ela em mostrador nenhum → 0; reconectar o adb antes de cada leitura). Retirar N8/T5. Atualizar a tabela de cobertura (R7, R8, R12, N1, N6, N7).
+- [ ] Manter a tela ligada na medida de N7: `adb shell svc power stayon true` (ou "Permanecer ativo" nas opções do desenvolvedor) e, na restauração final, `adb shell svc power stayon false`.
