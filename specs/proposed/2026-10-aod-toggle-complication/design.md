@@ -72,14 +72,19 @@ Apresentação (`presentationOf(state)`): `On` → âmbar `0xFFFFC107` / "AOD on
 
 | Peça | Pacote | Papel |
 |---|---|---|
-| `SystemAodSettings` | `cc.floresta.aodtoggle.system` | Implementa o porto: `Settings.Global` `ambient_enabled` (constante `AOD_KEY`, **único ponto** onde a chave aparece — pedido do brief), `checkSelfPermission(WRITE_SECURE_SETTINGS)`. |
+| `SystemAodSettings` | `cc.floresta.aodtoggle.system` | Implementa o porto: `Settings.Global` `ambient_enabled` (constante `AOD_KEY`, **único ponto** onde a chave aparece — pedido do brief), `checkSelfPermission(WRITE_SECURE_SETTINGS)`. `read()` devolve `null` tanto em `SettingNotFoundException` quanto em `SecurityException` (leitura de chave oculta negada a apps com `targetSdk` ≥ 31), registrando linhas distintas; `write()` captura `SecurityException`. |
 | `AodImage` | `cc.floresta.aodtoggle.system` | Rasteriza `R.drawable.aod_text` tingido com `Presentation.tintArgb` num `Bitmap` → `Icon.createWithBitmap`. A cor fica no bitmap, não dependendo de o mostrador respeitar tint de `Icon`. |
 | `AodComplicationService` | `cc.floresta.aodtoggle.complication` | `SuspendingComplicationDataSourceService`; tipo suportado só `SMALL_IMAGE` (`SmallImageType.ICON`, que não é recortado como `PHOTO`); `contentDescription` = `Presentation.label`; `tapAction` = `PendingIntent` de broadcast explícito para `ToggleReceiver`; sem imagem ambiente (o mostrador decide); `getPreviewData` devolve o estado `Off`. |
 | `ToggleReceiver` | `cc.floresta.aodtoggle.complication` | `BroadcastReceiver` não exportado: `AodToggle.toggle()` e `ComplicationDataSourceUpdateRequester.requestUpdateAll()`. |
 | `TriggerActivity` | `cc.floresta.aodtoggle.trigger` | Activity de lançador (`MAIN`/`LAUNCHER`, `noHistory`, `excludeFromRecents`): `toggle()`, mostra imagem + `label`, `requestUpdateAll()`, `finish()` após 1000 ms. |
 
-Manifesto: `<uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS"/>` (única
-permissão); serviço com `android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER"`,
+Manifesto: `<uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS"
+tools:ignore="ProtectedPermissions"/>` (única permissão; o `tools:ignore` silencia o erro do lint
+`ProtectedPermissions`, porque a concessão vem de `pm grant`); os nós
+`<permission>` e `<uses-permission>` de `${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, que o
+`androidx.core` ≥ 1.9 injeta no manifesto mesclado, são removidos com `tools:node="remove"` (o app não
+registra receiver dinâmico). `android:exported`: serviço `true` (o sistema faz o bind), activity de
+lançador `true`, receiver `false`. Serviço com `android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER"`,
 intent-filter `android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST`, meta-data
 `SUPPORTED_TYPES = SMALL_IMAGE` e `UPDATE_PERIOD_SECONDS = 0`; `uses-feature android.hardware.type.watch`;
 `com.google.android.wearable.standalone = true`. Ícone de lançador: ícone adaptativo com o vector "AOD"
@@ -133,10 +138,10 @@ N/A — a spec declara que não há superfície heurística.
 
 | NFR | Por construção | Por teste |
 |---|---|---|
-| N1 (≤ 1 s) | Toque → broadcast (sem janela) → escrita síncrona de uma chave → `requestUpdateAll()`; gatilho mostra o resultado assim que `toggle()` retorna. | Lista manual: gravação/cronômetro nos dois mostradores. |
+| N1 (≤ 1 s) | Toque → broadcast (sem janela) → escrita síncrona de uma chave → `requestUpdateAll()`; gatilho mostra o resultado assim que `toggle()` retorna. O tempo entre `requestUpdateAll()` e o redesenho é do sistema e do mostrador, não do app (premissa 2). | Lista manual: gravação/cronômetro nos dois mostradores. |
 | N2 | — (sem meta) | — |
 | N3 | Sem dados de tenant, sem rede. | Coberto por N4. |
-| N4 | Manifesto declara só `WRITE_SECURE_SETTINGS`; nenhuma dependência que traga permissão (conferido no manifesto mesclado). | `aapt dump permissions` do APK de release, na lista manual e no fechamento da Task 1. |
+| N4 | Manifesto declara só `WRITE_SECURE_SETTINGS` e remove (`tools:node="remove"`) a `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` injetada pelo `androidx.core`; o manifesto mesclado é conferido na Task 1. | `aapt dump permissions` do APK de release, na lista manual e no fechamento da Task 1. |
 | N5 | Falhas passam pelo log do núcleo → `Log.w("AodToggle", …)`; caminho feliz não registra. | Testes do núcleo (log chamado só nas falhas) + `adb logcat -s AodToggle` na lista manual. |
 | N6 | `UPDATE_PERIOD_SECONDS = 0`; nenhum serviço em primeiro plano, alarme, job ou observer. | `dumpsys alarm` / `dumpsys jobscheduler` na lista manual. |
 | N7 | Consequência aceita de N6. | Lista manual registra quando a complication acompanha uma mudança feita em Configurações. |
@@ -148,6 +153,7 @@ N/A — a spec declara que não há superfície heurística.
 |---|---|
 | Sem `pm grant` | Complication cinza; gatilho mostra "AOD unavailable" e fecha; log `NO_PERMISSION`. |
 | Chave ausente (sistema mudou) | Idem, log `KEY_MISSING`. |
+| Leitura negada ao app (`SecurityException` por chave oculta, `targetSdk` ≥ 31) | Tratada como chave ausente: indisponível, log próprio; nenhum componente quebra. Verificado no relógio na Task 3 — se acontecer, a alternância é inviável e a spec é reaberta (decisão do autor para chave inviável). |
 | Escrita aceita mas sem efeito | Mostra o estado relido (o real); log "escrita sem efeito". |
 | `SecurityException` na escrita (permissão revogada entre a checagem e a escrita) | Capturada em `SystemAodSettings.write`; a releitura devolve o estado real; log. |
 | Mostrador ignora a complication / não aceita `SMALL_IMAGE` | Fora do controle do app; risco da spec (segundo mostrador). |
@@ -166,12 +172,17 @@ exige novo `pm grant`.
 | Sem imagem ambiente | Contorno cinza / ocultar | O mostrador já tem suas regras de ambiente. | Não. |
 | `minSdk 34` / `targetSdk 34` / `compileSdk 36` | min 30; target 36 | Só o OW3 é verificado; 36 compila para expor depreciações. | Não. |
 | JUnit 4 puro | JUnit 5; Robolectric | Núcleo Kotlin puro; nada a ganhar com o peso extra. | Não. |
-| Keystore própria fora do repo; R8 desligado | Chave de debug; R8 ligado | Pedido do autor. | Não. |
+| Keystore própria fora do repo; R8 desligado | Chave de debug; R8 ligado | Pedido do autor; a assinatura é exigida pelo "Artifact smoke" do `task-verify` (instala o APK de release), não por um R*. | Não. |
 | CI do repositório não ganha build Gradle nesta change | Adicionar | Fora da spec aprovada; o repositório não tem remoto ainda. | Não. |
 
 ## Assumptions
 
-Nenhuma.
+1. O app (não só o shell) consegue ler e escrever `Settings.Global` `ambient_enabled` com `targetSdk 34` e
+   `WRITE_SECURE_SETTINGS` concedida por `pm grant`. Contexto da spec: a descoberta provou só o shell, e o
+   risco "A concessão `pm grant` … ao app pode se comportar diferente do shell" cobre a escrita; a leitura
+   entra no mesmo risco. Verificada no relógio na Task 3, antes do resto.
+2. O redesenho após `requestUpdateAll()` cabe em N1 (≤ 1 s); o atraso é do sistema e do mostrador.
+   Verificada pelo item de N1 da lista manual; se falhar, a decisão é do autor (ver Review Focus).
 
 ## Global Constraints
 
@@ -194,6 +205,7 @@ Nenhuma.
 - O `PendingIntent` do toque é explícito, imutável e o receiver não é exportado — Task 6.
 - O gatilho fecha mesmo se a activity for pausada antes dos 1000 ms (`noHistory`) — Task 7.
 - O manifesto mesclado não ganha permissões de dependências — Task 1.
+- O redesenho da complication após `requestUpdateAll()` pode passar de 1 s em algum mostrador (premissa 2) — Task 9 (item de N1).
 
 ## Decomposição
 
@@ -205,7 +217,7 @@ Nenhuma.
 **Refs:** N4
 **Files:** Create `settings.gradle.kts`, `build.gradle.kts`, `gradle/libs.versions.toml`, `gradle/wrapper/*`, `gradlew`, `app/build.gradle.kts`, `app/src/main/AndroidManifest.xml`, `.editorconfig`, `config/detekt/detekt.yml` (se preciso).
 - [ ] Resolver as últimas versões estáveis (AGP, Kotlin, ktlint-gradle, detekt, wear complications, core-ktx, JUnit 4) compatíveis com JDK 17 e fixá-las no catálogo.
-- [ ] Manifesto com `WRITE_SECURE_SETTINGS`, `uses-feature watch`, `standalone`.
+- [ ] Manifesto com `WRITE_SECURE_SETTINGS` (`tools:ignore="ProtectedPermissions"`), remoção da `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, `uses-feature watch`, `standalone`.
 - [ ] Assinatura de release lida de propriedades Gradle (`aodtoggle.keystore.*`), ausente → sem assinatura; R8 desligado.
 - [ ] Provar `./gradlew ktlintCheck detekt lintDebug testDebugUnitTest assembleRelease` verde e `aapt dump permissions` listando só `WRITE_SECURE_SETTINGS`.
 
@@ -220,6 +232,7 @@ Nenhuma.
 **Files:** Create `app/src/main/java/cc/floresta/aodtoggle/system/SystemAodSettings.kt`.
 - [ ] `AOD_KEY = "ambient_enabled"` em `Settings.Global`; `read()` nulo em `SettingNotFoundException`; `hasWritePermission()` via `checkSelfPermission`; `write()` captura `SecurityException` e registra.
 - [ ] Fábrica que liga o núcleo ao `Log.w("AodToggle", …)`.
+- [ ] **No relógio, antes das demais tasks:** instalar, `pm grant`, e confirmar que o app lê `ambient_enabled`, escreve-o (o AOD muda em Configurações) e que `checkSelfPermission` reporta a concessão (e a revogação). Falha aqui para a execução e leva à reabertura da spec.
 
 ### Task 4: Arte "AOD" e ícone de lançador
 **Refs:** R1, R7
@@ -255,4 +268,5 @@ Nenhuma.
 ### Task 9: Lista de verificação manual
 **Refs:** R10
 **Files:** Create `docs/manual-checklist.md`.
+- [ ] **Primeiro item:** concessão `pm grant` ao app e leitura/escrita da chave pelo app (risco da spec).
 - [ ] Itens para R1–R8 e N1, N4–N8, em dois mostradores (Gravity + o segundo achado), com colunas resultado/observação, prontos para copiar no `evidence.md`.
