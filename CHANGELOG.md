@@ -12,4 +12,5 @@ Regras: `spec-layout` → "Changelog de release".
 
 ### Added
 
+- Guard que só aceita PR para a `main` vinda da `dev` (workflow `PR origin check`) (seq 2, #2)
 - Complication "AOD Toggle" e gatilho "AOD" mapeável a um botão, que alternam o Always-On Display do OnePlus Watch 3 (seq 1, #1)

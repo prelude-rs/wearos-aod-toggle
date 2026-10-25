@@ -1,4 +1,4 @@
-# SOURCE-OF-TRUTH — wearos-complication-aod-toggle
+# SOURCE-OF-TRUTH — wearos-aod-toggle
 
 ## Estado atual
 
@@ -27,6 +27,10 @@ instalado por sideload e assinado com a keystore da organização prelude-rs. Re
   genérico de bateria (também para o Maps).
 - **Falhas** geram uma linha `Log.w` na tag `AodToggle`; o caminho feliz não registra nada.
 - Verificado no relógio em dois mostradores (Gravity e "Chic").
+- **Repositório:** público; `dev` aceita só PR com squash e `main` só PR com merge commit, ambos sem
+  force-push nem exclusão (rulesets do repositório). PR para `main` só passa vindo da `dev` deste
+  repositório: o workflow `PR origin check` (`pull_request_target`, roda a cópia da `main`) é check
+  obrigatório no ruleset `main`.
 
 ## Propósito
 

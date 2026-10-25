@@ -1,0 +1,43 @@
+# Guard de origem: PR para `main` só pode vir da `dev` deste mesmo repositório.
+#
+# Adaptado de ForSellers/.github/.github/workflows/pr-origin-check.yml. Lá o guard vive num repositório
+# central e é imposto pelo ruleset da organização (regra `workflows`); a prelude-rs está no plano Free, que
+# não tem essa regra. Aqui ele vive no próprio repositório e é exigido como check no ruleset `main`.
+#
+# `pull_request_target`, e não `pull_request`: o workflow roda a versão do arquivo que está na `main`
+# (a base), nunca a da branch da PR — então a PR não consegue editar ou apagar o guard para escapar dele.
+# É seguro aqui porque o job não faz checkout nem executa nada da PR; só lê dois campos do evento, e os
+# lê por variável de ambiente (nunca interpolados no script), o que fecha a injeção pelo nome da branch.
+name: PR origin check
+
+on:
+  pull_request_target:
+    branches: [main]
+    # `edited` não é opcional: uma PR aberta contra a `dev` e depois reapontada para a `main` emite
+    # `pull_request_target` com action `edited`; sem ele, o reapontamento entraria sem passar aqui.
+    types: [opened, synchronize, reopened, edited]
+
+permissions: {}
+
+jobs:
+  pr-origin-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Exigir que a origem seja a dev deste repositório
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          # Um fork também pode ter uma branch chamada `dev`: a origem tem de ser a `dev` daqui.
+          if [ "$HEAD_REPO" != "$REPO" ]; then
+            echo "::error::PR para \`main\` deve vir da \`dev\` de $REPO. Origem: $HEAD_REPO:$HEAD_REF."
+            exit 1
+          fi
+          if [ "$HEAD_REF" != "dev" ]; then
+            echo "::error::PR para \`main\` deve vir da \`dev\`. Origem: \`$HEAD_REF\`."
+            echo "Traga a mudança para a \`dev\` primeiro e abra a PR de release dev→main."
+            exit 1
+          fi
+          echo "Origem \`dev\`. Aprovado."
