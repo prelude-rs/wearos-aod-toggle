@@ -50,7 +50,7 @@ Change-ID: 2026-10-aod-toggle-complication
 | 4 | design.md § Task 4 | VISUAL | DONE | d24848c | |
 | 5 | design.md § Task 5 | VISUAL | DONE | 93bef73 | |
 | 6 | design.md § Task 6 | — | DONE | 7174f6a | |
-| 7 | design.md § Task 7 | VISUAL | PENDING | | |
+| 7 | design.md § Task 7 | VISUAL | DONE | 2532a8c | |
 | 8 | design.md § Task 8 | — | PENDING | | |
 | 9 | design.md § Task 9 | — | PENDING | | |
 | — | validation-gate | — | PENDING | | |
