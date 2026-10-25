@@ -81,6 +81,8 @@ Preview: <command of the Dev-run premise used>
 ## Regression standing
 <!-- Commands run (test suite, lints, build) and exit status. -->
 
+- 2026-10-25 — `./gradlew connectedDebugAndroidTest` no OnePlus Watch 3 (OPWE242, Android 14 / API 34): exit 0, `SystemAodSettingsTest` 1 teste, 0 falhas. Premissa 1 provada (o app concedido lê e escreve `ambient_enabled`); valor do AOD restaurado ao anterior (`0`). Fecha o BLOCKED de R3/R6.
+
 ## Standards (eixo separado — validation-gate passo 8)
 <!-- Sem código no diff → `n.a. — <motivo>`. Escopo é o diff da change, não o repo.
      Declare a isolação: subagente separado do eixo Spec, ou a ausência dele.
