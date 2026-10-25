@@ -1,12 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A palavra "AOD" em caminhos preenchidos (A, O, D), branca para receber tint. -->
+<!-- Arte N1: "A" e "D" afastados 6 unidades do centro e um "O" em forma de relógio (anel, ponteiros
+     de horas e de minutos, ponto central). Tudo branco, para receber tint. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="100"
     android:viewportHeight="100">
+    <group android:translateX="-6">
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:fillType="evenOdd"
+            android:pathData="M9,65 L18,35 L26,35 L35,65 L27.5,65 L25.8,59 L18.2,59 L16.5,65 Z M19.8,53 L24.2,53 L22,44.5 Z" />
+    </group>
+    <group android:translateX="6">
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:fillType="evenOdd"
+            android:pathData="M67,35 H76 A15,15 0 0 1 76,65 H67 Z M74,42 V58 H76 A8,8 0 0 0 76,42 Z" />
+    </group>
+    <!-- Anel: centro 51,50, raio do traço 16,95. -->
+    <path
+        android:pathData="M34.05,50 A16.95,16.95 0 1 0 67.95,50 A16.95,16.95 0 1 0 34.05,50 Z"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="3.6" />
+    <!-- Ponteiro de horas: 35 graus, comprimento 8,9. -->
+    <path
+        android:pathData="M51,50 L56.105,42.71"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round"
+        android:strokeWidth="4.05" />
+    <!-- Ponteiro de minutos: 270 graus, comprimento 13,3. -->
+    <path
+        android:pathData="M51,50 L37.7,50"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round"
+        android:strokeWidth="3.04" />
+    <!-- Ponto central, raio 2,15. -->
     <path
         android:fillColor="#FFFFFFFF"
-        android:fillType="evenOdd"
-        android:pathData="M9,65 L18,35 L26,35 L35,65 L27.5,65 L25.8,59 L18.2,59 L16.5,65 Z M19.8,53 L24.2,53 L22,44.5 Z M49,35 H53 A11,11 0 0 1 64,46 V54 A11,11 0 0 1 53,65 H49 A11,11 0 0 1 38,54 V46 A11,11 0 0 1 49,35 Z M49,42 H53 A4,4 0 0 1 57,46 V54 A4,4 0 0 1 53,58 H49 A4,4 0 0 1 45,54 V46 A4,4 0 0 1 49,42 Z M67,35 H76 A15,15 0 0 1 76,65 H67 Z M74,42 V58 H76 A8,8 0 0 0 76,42 Z" />
+        android:pathData="M48.85,50 A2.15,2.15 0 1 0 53.15,50 A2.15,2.15 0 1 0 48.85,50 Z" />
 </vector>
