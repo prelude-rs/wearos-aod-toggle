@@ -257,7 +257,7 @@ exige novo `pm grant`.
 
 ## Decomposição
 
-**Justificativa de dimensionamento:** N/A
+**Justificativa de dimensionamento:** continua um só entregável (o app AOD Toggle no relógio) terminando num só estado verde; as Tasks 10–17 vêm de três reaberturas do mesmo entregável no mesmo dia, e as Tasks 15 e 16 se anulam (aro posto e retirado), de modo que o trabalho efetivo é de 15 tasks; a Task 17 só renomeia pacote, projeto e assinatura do mesmo app.
 
 **Execução:** subagent-driven
 
