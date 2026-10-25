@@ -25,13 +25,13 @@ Legenda de resultado: OK / falha / bloqueio.
 
 ## Item 0 — Premissa 1 (primeiro; risco da spec)
 
-O app, e não só o shell, precisa ler e escrever `Settings.Global ambient_enabled` com `WRITE_SECURE_SETTINGS` concedida por `pm grant`. Se qualquer passo abaixo falhar, **pare**: a spec é reaberta (decisão do autor).
+O app, e não só o shell, precisa ler e escrever `Settings.Global ambient_enabled` com `WRITE_SECURE_SETTINGS` concedida por `pm grant`. **Só reabre a spec** (decisão do autor) uma leitura ou escrita **negada ao app** (`SecurityException`, ou falha de asserção em 0a) **com a concessão feita**. **Erro de arnês não reabre**: conexão adb caída, falha de instalação (APK `unsigned`, assinatura diferente) ou falha de `pm grant` (inclusive a falha rotulada "harness: pm grant failed" no teste). Nesses casos, reconecte/corrija e rode de novo; registre como bloqueio, não como falha da premissa.
 
 | ID | Verifica | Passo | Esperado | Resultado | Observação |
 |---|---|---|---|---|---|
-| 0a | Premissa 1, Risco 1 (prova automatizada) | **Antes** de desinstalar o debug: `./gradlew installDebug`, `adb shell pm grant cc.floresta.aodtoggle.debug android.permission.WRITE_SECURE_SETTINGS`, `./gradlew connectedDebugAndroidTest` | Testes instrumentados passam (app lê e escreve a chave) | | |
-| 0b | Premissa 1, R4 | Desinstale o debug: `adb uninstall cc.floresta.aodtoggle.debug`. Instale o release e conceda: `adb install -r app/build/outputs/apk/release/app-release.apk` e `adb shell pm grant cc.floresta.aodtoggle android.permission.WRITE_SECURE_SETTINGS`. Confirme só um provedor/app "AOD": `adb shell pm list packages \| grep aodtoggle` | Só `package:cc.floresta.aodtoggle` | | |
-| 0c | Premissa 1, R4 | `adb shell settings get global ambient_enabled` (anote N). Ponha a complication "AOD" em um mostrador (README, "Use it") e toque nela. Repita o `settings get`. | O valor passa de N para 1-N (0 ↔ 1) | | |
+| 0a | Premissa 1, Risco 1 (prova automatizada) | **Antes** de desinstalar o debug: `./gradlew installDebug`, `adb shell pm grant cc.floresta.aodtoggle.debug android.permission.WRITE_SECURE_SETTINGS`, `./gradlew connectedDebugAndroidTest` | Testes instrumentados passam (app lê e escreve a chave). Falha de asserção em leitura ou escrita **com a concessão feita**: reabre a spec. Erro de arnês (conexão, instalação, "harness: pm grant failed"): reconecte e rode de novo | | |
+| 0b | Premissa 1, R4 | Desinstale o debug: `adb uninstall cc.floresta.aodtoggle.debug`. Instale o release e conceda: `adb install -r app/build/outputs/apk/release/app-release.apk` e `adb shell pm grant cc.floresta.aodtoggle android.permission.WRITE_SECURE_SETTINGS`. Confirme só um provedor/app "AOD": `adb shell pm list packages \| grep aodtoggle` | Só `package:cc.floresta.aodtoggle`. Erro de instalação ou de `pm grant` é problema de arnês (corrija e repita), não da premissa | | |
+| 0c | Premissa 1, R4 | `adb shell settings get global ambient_enabled` (anote N). Ponha a complication "AOD" em um mostrador (README, "Use it") e toque nela. Repita o `settings get`. | O valor passa de N para 1-N (0 ↔ 1). Só leitura ou escrita negada ao app (com a concessão feita) reabre a spec | | |
 
 ## Verificação do segundo mostrador
 
