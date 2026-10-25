@@ -85,6 +85,9 @@ Preview: <command of the Dev-run premise used>
 | R17 | 5, 6 | O texto do design para `ToggleReceiver` e o mapa de R6 continua divergindo do código (R10); o validation-gate aceita a divergência e a reescrita do SoT segue o código | Revisão final, Minor 6; editar o design exigiria nova rodada do consistency-gate | Texto do SoT |
 | R18 | 15 | A Task 15 também ajusta o item F1 da lista manual: "arte N1 dentro do aro, em branco, âmbar e cinza (R1)" | Aviso W6 da rodada 7, aceito na Gate 1.5 | Uma linha da lista |
 | R19 | 15, 16 | A Task 15 (aro na complication) foi substituída pela Task 16 (aro retirado); o conteúdo de antes da Task 15 é o de `f68fa1b` | Aviso W6 da rodada 8, aceito na Gate 1.5; editar o design custaria a rodada 9 | Nenhum: o bloco da Task 15 fica só como histórico |
+| R20 | 17 | `rootProject.name` passa de `aod-toggle` (não `wearos-complication-aod-toggle`, como diz o design) para `wearos-aod-toggle`; o repositório e a pasta é que se chamavam `wearos-complication-aod-toggle` | Aviso W7 da rodada 9 | Nenhum |
+| R21 | 17 | O título de `specs/SOURCE-OF-TRUTH.md` não é renomeado nesta change | A reescrita do SoT no arquivamento só toca as seções declaradas na spec (regra 5(b)), e o título não está entre elas; aviso W8 da rodada 9 | Título antigo no SoT até uma change futura |
+| R22 | 17 | O prefixo das propriedades de assinatura continua `aodtoggle.keystore.*` (o autor já atualizou o `~/.gradle/gradle.properties` para `~/IAM/prelude-rs-release.jks`, alias `prelude`); o exemplo de `keytool` do README passa a `~/prelude-rs-release.jks`, alias `prelude`, com `-dname "CN=prelude-rs, O=prelude-rs, C=BR"` | Aviso W9 da rodada 9 | Ajuste de documentação |
 
 ## Out-of-scope respected
 <!-- Confirm each out-of-scope item was not implemented. -->
