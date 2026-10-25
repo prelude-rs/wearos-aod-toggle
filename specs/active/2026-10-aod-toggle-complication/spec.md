@@ -3,7 +3,7 @@
 Change-ID: 2026-10-aod-toggle-complication
 Status: Approved
 <!-- approved-by: Ricardo Nogueira on 2026-10-25 -->
-<!-- approved-content: sha256:367f50891a1a -->
+<!-- approved-content: sha256:f1fbba4f90d3 -->
 Epic: none
 Author(s): ricardo with Claude
 Date: 2026-10-24
