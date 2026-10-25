@@ -2,6 +2,7 @@ package cc.floresta.aodtoggle.system
 
 import android.Manifest
 import android.content.Context
+import android.os.ParcelFileDescriptor
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -10,7 +11,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
-import java.io.FileInputStream
 
 class SystemAodSettingsTest {
     private lateinit var context: Context
@@ -47,12 +47,14 @@ class SystemAodSettingsTest {
 
     private fun grant(packageName: String) {
         val command = "pm grant $packageName ${Manifest.permission.WRITE_SECURE_SETTINGS}"
-        val descriptor =
-            InstrumentationRegistry.getInstrumentation().uiAutomation.executeShellCommand(command)
-        // Lê até o EOF e fecha antes de qualquer asserção: o comando é assíncrono.
-        val output =
-            FileInputStream(descriptor.fileDescriptor).use { it.readBytes().decodeToString() }
-        descriptor.close()
-        if (output.isNotBlank()) fail("harness: pm grant failed: $output")
+        // Rwe devolve [stdout, stdin, stderr]; pm grant escreve falhas em stderr.
+        val (stdout, stdin, stderr) =
+            InstrumentationRegistry.getInstrumentation().uiAutomation.executeShellCommandRwe(command)
+        stdin.close()
+        // Lê os dois fluxos até o EOF, fechando cada descritor uma única vez, antes de asserir.
+        val out = ParcelFileDescriptor.AutoCloseInputStream(stdout).use { it.readBytes().decodeToString() }
+        val err = ParcelFileDescriptor.AutoCloseInputStream(stderr).use { it.readBytes().decodeToString() }
+        val output = (out + err).trim()
+        if (output.isNotEmpty()) fail("harness: pm grant failed: $output")
     }
 }
