@@ -78,6 +78,10 @@ Preview: <command of the Dev-run premise used>
 | R11 | 11 | Raio do anel 16,95 (1,25× de R1), não o 17,2 da prévia; o texto "valores medidos na prévia" do design não vale para o raio | Aviso W3 da rodada 6, aceito na Gate 1.5 de 2026-10-25; editar o design custaria uma rodada além do teto | A revisão visual da Task 11 decide |
 | R12 | 13 | A tela do gatilho não se fecha por tempo; `noHistory` a finaliza quando a tela apaga ou volta ao mostrador (decisão do autor), apesar da restrição global "não se fecha sozinha" | Aviso W4 da rodada 6; a linha da `TriggerActivity` no design carrega a decisão | Comportamento a confirmar na revisão visual |
 | R13 | 14 | Medida de N7 com o relógio no carregador e `svc power stayon true` (só vale na energia) | Aviso W5 da rodada 6 | Se o mostrador não ficar visível carregando, a medida de N7 muda de meio |
+| R14 | 13, 14 | `onRestart` re-renderiza o estado atual sem alternar; README e T3(c) dizem que apagar a tela pode fechar ou manter a tela do gatilho | Revisão final: a plataforma não finaliza `noHistory` ao dormir; manter a tela cumpre R7 ao pé da letra; R12 (fechamento ao apagar) fica como possibilidade, não promessa | Uma frase de documentação |
+| R15 | 13 | Layout do gatilho apertado de antemão (padding vertical 24dp, imagem 80dp) | Revisão final: o texto de R8 podia ser cortado na tela redonda | Ajuste de layout na revisão visual |
+| R16 | 11 | Escala do aro do ícone mantida em 72/108 (valor do design), conferida na revisão visual | Revisão final: o aro encosta na máscara | Um ajuste de escala |
+| R17 | 5, 6 | O texto do design para `ToggleReceiver` e o mapa de R6 continua divergindo do código (R10); o validation-gate aceita a divergência e a reescrita do SoT segue o código | Revisão final, Minor 6; editar o design exigiria nova rodada do consistency-gate | Texto do SoT |
 
 ## Out-of-scope respected
 <!-- Confirm each out-of-scope item was not implemented. -->
