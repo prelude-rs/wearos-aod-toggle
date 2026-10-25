@@ -2,8 +2,8 @@
 
 Change-ID: 2026-10-aod-toggle-complication
 Status: Approved
-<!-- approved-by: Ricardo Nogueira on 2026-10-24 -->
-<!-- approved-content: sha256:5ac6c2a3bf2a -->
+<!-- approved-by: Ricardo Nogueira on 2026-10-25 -->
+<!-- approved-content: sha256:5d28c8dbc7ba -->
 Spec: ./spec.md
 
 ## Approach summary

@@ -75,6 +75,9 @@ Preview: <command of the Dev-run premise used>
 | R8 | 8 | README em inglês | O autor trabalha em inglês; a regra pt-BR do kit cobre os artefatos SDD | Tradução |
 | R9 | 9 | `docs/manual-checklist.md` em pt-BR | Os resultados vão para este `evidence.md` | Tradução |
 | R10 | 5, 6 | O toque na complication depende do estado **exibido**: indisponível → REFRESH (só redesenha), ligado/desligado → TOGGLE; decisão em `tapActionFor` (núcleo, testada). Diverge do texto do design (receiver sempre chamava `toggle()`), que não satisfazia o aceite de R6 ("sem mudar o AOD") | A spec é a autoridade; a revisão final achou R6 quebrado de ponta a ponta | Uma string de ação a mais; divergência design/implementação que o validation-gate precisa aceitar |
+| R11 | 11 | Raio do anel 16,95 (1,25× de R1), não o 17,2 da prévia; o texto "valores medidos na prévia" do design não vale para o raio | Aviso W3 da rodada 6, aceito na Gate 1.5 de 2026-10-25; editar o design custaria uma rodada além do teto | A revisão visual da Task 11 decide |
+| R12 | 13 | A tela do gatilho não se fecha por tempo; `noHistory` a finaliza quando a tela apaga ou volta ao mostrador (decisão do autor), apesar da restrição global "não se fecha sozinha" | Aviso W4 da rodada 6; a linha da `TriggerActivity` no design carrega a decisão | Comportamento a confirmar na revisão visual |
+| R13 | 14 | Medida de N7 com o relógio no carregador e `svc power stayon true` (só vale na energia) | Aviso W5 da rodada 6 | Se o mostrador não ficar visível carregando, a medida de N7 muda de meio |
 
 ## Out-of-scope respected
 <!-- Confirm each out-of-scope item was not implemented. -->
