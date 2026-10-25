@@ -45,6 +45,12 @@ class TriggerActivity : Activity() {
         toggleAndRender()
     }
 
+    /** A plataforma mantém `noHistory` ao dormir: ao reacordar, só relê o estado (não alterna). */
+    override fun onRestart() {
+        super.onRestart()
+        render(aodToggle(this).current())
+    }
+
     private fun toggleAndRender() {
         render(aodToggle(this).toggle())
         requestComplicationRefresh(this)
