@@ -64,6 +64,16 @@ Preview: <command of the Dev-run premise used>
 
 | # | Task | Ruling (o quê) | Por quê | Custo se errado |
 |---|------|----------------|---------|-----------------|
+| R1 | 1, 7 | A Task 1 cria `strings.xml` de main ("AOD") e de debug ("AOD (debug)"); a Task 7 só modificaria | O rótulo precisa existir desde a Task 1 | Mover um arquivo |
+| R2 | 1 | A Task 1 cria o `gradle.properties` do projeto com `android.injected.androidTest.leaveApksInstalledAfterRun=true` | Achado W2 da rodada 4 do gate | Nenhum |
+| R3 | 3 | Sem o relógio acessível, a Task 3 fica BLOCKED em vez de DONE | A premissa 1 só se prova no aparelho | Uma pausa |
+| R4 | 3 | O teste instrumentado lê a saída de `pm grant` até EOF antes de asserir; erro do `pm grant` = arnês, permissão falsa após concessão = premissa 1 | Achado W4 da rodada 4 do gate | Reabertura falsa da spec |
+| R5 | 5–7 | Serviço, receiver e activity sem `android:label` (herdam o da aplicação) | "AOD (debug)" chega ao editor do mostrador e ao seletor de botão | Achado na revisão visual |
+| R6 | 3–9 | Relógio inacessível à noite: a Task 3 implementa e compila o teste instrumentado, a execução no aparelho fica pendente (BLOCKED), e as Tasks 4–9 seguem | O autor estava dormindo; a falha da premissa 1 reabre a spec | Trabalho das Tasks 4–9 perdido se o app não puder escrever a chave |
+| R7 | — | Os trailers dos commits 36b5ce0, 8908449, 71e92bd, d24848c e 93bef73 dizem Opus, mas foram escritos por subagentes Sonnet (instrução errada no `constraints.md`, corrigida); histórico não reescrito | Reescrever histórico é decisão do autor | Atribuição errada em 5 trailers |
+| R8 | 8 | README em inglês | O autor trabalha em inglês; a regra pt-BR do kit cobre os artefatos SDD | Tradução |
+| R9 | 9 | `docs/manual-checklist.md` em pt-BR | Os resultados vão para este `evidence.md` | Tradução |
+| R10 | 5, 6 | O toque na complication depende do estado **exibido**: indisponível → REFRESH (só redesenha), ligado/desligado → TOGGLE; decisão em `tapActionFor` (núcleo, testada). Diverge do texto do design (receiver sempre chamava `toggle()`), que não satisfazia o aceite de R6 ("sem mudar o AOD") | A spec é a autoridade; a revisão final achou R6 quebrado de ponta a ponta | Uma string de ação a mais; divergência design/implementação que o validation-gate precisa aceitar |
 
 ## Out-of-scope respected
 <!-- Confirm each out-of-scope item was not implemented. -->
