@@ -1,7 +1,9 @@
 # Design: Complication e gatilho para alternar o AOD no OnePlus Watch 3
 
 Change-ID: 2026-10-aod-toggle-complication
-Status: Draft            <!-- Approved only after consistency-gate PASS + human review -->
+Status: Approved
+<!-- approved-by: Ricardo Nogueira on 2026-10-24 -->
+<!-- approved-content: sha256:5ac6c2a3bf2a -->
 Spec: ./spec.md
 
 ## Approach summary
