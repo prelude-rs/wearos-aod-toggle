@@ -260,6 +260,8 @@ Walk inverso sobre `git diff e53f3e0 HEAD` (48 arquivos). Motivação de cada gr
 - 2026-10-25 — `./gradlew connectedDebugAndroidTest` no OnePlus Watch 3 (OPWE242, Android 14 / API 34): exit 0, `SystemAodSettingsTest` 1 teste, 0 falhas. Premissa 1 provada (o app concedido lê e escreve `ambient_enabled`); valor do AOD restaurado ao anterior (`0`). Fecha o BLOCKED de R3/R6.
 - 2026-10-25 14:17 — Task 17 (pacote `rs.prelude.aodtoggle.debug`): `./gradlew connectedDebugAndroidTest` no OPWE242: exit 0, `SystemAodSettingsTest` 1 teste, 0 falhas — premissa 1 refeita no pacote novo. Observação de arnês: com o relógio conectado por `IP:porta` (`adb connect 192.168.1.122:33233`) o AGP marca a tarefa como falha mesmo com o teste passando (a instrumentação crua dá `INSTRUMENTATION_CODE: -1`, o XML 1/1 verde); com o nome mDNS (`adb connect "adb-…(2)._adb-tls-connect._tcp"`) a tarefa fica verde. Release `rs.prelude.aodtoggle` instalado (14:18:05), assinado `O=prelude-rs`, permissão concedida; `cc.floresta.aodtoggle` desinstalado.
 
+- 2026-10-25 17:09 — smoke do release com o refactor de Standards (`3ea483c`, receiver renomeado `ComplicationTapReceiver`), via USB: instalação OK, permissão mantida; toque na complication e abertura do gatilho alternaram o AOD (chave 1 → 0 → 1, conferida por adb); nenhum crash (`logcat -b crash` vazio) e nenhuma linha `AodToggle` no caminho feliz.
+
 ## Standards (eixo separado — validation-gate passo 8)
 <!-- Sem código no diff → `n.a. — <motivo>`. Escopo é o diff da change, não o repo.
      Declare a isolação: subagente separado do eixo Spec, ou a ausência dele.
