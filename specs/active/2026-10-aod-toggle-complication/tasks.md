@@ -46,7 +46,7 @@ Change-ID: 2026-10-aod-toggle-complication
 |---|------|--------|--------|--------|-------|
 | 1 | design.md § Task 1 | — | DONE | 36b5ce0 | core-ktx 1.18.0 (1.19.1 exige compileSdk 37) |
 | 2 | design.md § Task 2 | — | DONE | 03bd75a | 17 testes JUnit |
-| 3 | design.md § Task 3 | — | PENDING | | |
+| 3 | design.md § Task 3 | — | BLOCKED | 8908449, 71e92bd | código e L1 verdes; falta rodar `./gradlew connectedDebugAndroidTest` no relógio (offline à noite) — premissa 1 |
 | 4 | design.md § Task 4 | VISUAL | PENDING | | |
 | 5 | design.md § Task 5 | VISUAL | PENDING | | |
 | 6 | design.md § Task 6 | — | PENDING | | |
