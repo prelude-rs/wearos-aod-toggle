@@ -39,5 +39,9 @@
                 android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
                 android:value="0" />
         </service>
+
+        <receiver
+            android:name=".complication.ToggleReceiver"
+            android:exported="false" />
     </application>
 </manifest>

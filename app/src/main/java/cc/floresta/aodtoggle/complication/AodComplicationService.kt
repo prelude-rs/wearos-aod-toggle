@@ -1,5 +1,7 @@
 package cc.floresta.aodtoggle.complication
 
+import android.app.PendingIntent
+import android.content.Intent
 import androidx.wear.watchface.complications.data.ComplicationData
 import androidx.wear.watchface.complications.data.ComplicationType
 import androidx.wear.watchface.complications.data.PlainComplicationText
@@ -13,25 +15,37 @@ import cc.floresta.aodtoggle.core.presentationOf
 import cc.floresta.aodtoggle.system.AodImage
 import cc.floresta.aodtoggle.system.aodToggle
 
-/** Complication `SMALL_IMAGE` que mostra o estado atual do AOD. O toque é adicionado na Task 6. */
+/** Complication `SMALL_IMAGE` que mostra o estado atual do AOD. O toque alterna o AOD via [ToggleReceiver]. */
 class AodComplicationService : SuspendingComplicationDataSourceService() {
     override suspend fun onComplicationRequest(request: ComplicationRequest): ComplicationData? =
         if (request.complicationType == ComplicationType.SMALL_IMAGE) {
-            dataFor(aodToggle(this).current())
+            dataFor(aodToggle(this).current(), tapAction())
         } else {
             null
         }
 
     // A prévia do seletor não lê as configurações: mostra sempre o estado desligado.
     override fun getPreviewData(type: ComplicationType): ComplicationData? =
-        if (type == ComplicationType.SMALL_IMAGE) dataFor(AodState.Off) else null
+        if (type == ComplicationType.SMALL_IMAGE) dataFor(AodState.Off, null) else null
 
-    private fun dataFor(state: AodState): ComplicationData {
+    private fun tapAction(): PendingIntent =
+        PendingIntent.getBroadcast(
+            this,
+            0,
+            Intent(this, ToggleReceiver::class.java),
+            PendingIntent.FLAG_IMMUTABLE,
+        )
+
+    private fun dataFor(
+        state: AodState,
+        tapAction: PendingIntent?,
+    ): ComplicationData {
         val presentation = presentationOf(state)
         return SmallImageComplicationData
             .Builder(
                 SmallImage.Builder(AodImage.icon(this, presentation), SmallImageType.ICON).build(),
                 PlainComplicationText.Builder(presentation.label).build(),
-            ).build()
+            ).setTapAction(tapAction)
+            .build()
     }
 }
