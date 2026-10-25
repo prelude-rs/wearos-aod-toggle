@@ -1,13 +1,14 @@
 # Consistency Report — 2026-10-aod-toggle-complication
 
-Verdict: PASS
-**Justificativa de tamanho:** rodada 2 sobre o delta desde `337545f`, 5 WARNING com sítio e conserto cada.
+Verdict: FAIL
+**Justificativa de tamanho:** rodada 3 sobre o delta desde `0e7bf17`: 1 BLOCKING e 5 WARNING, cada um com sítio e conserto.
 
 ## Rodadas
 | # | Verdict | BLOCKING | WARNING | Reaberturas | Base |
 |---|---------|----------|---------|-------------|------|
 | 1 | FAIL    | 2        | 5       | 0           | —    |
 | 2 | PASS    | 0        | 5       | 0           | 337545f |
+| 3 | FAIL    | 1        | 5       | 0           | 0e7bf17 |
 
 ## Check 1 — Coverage spec → design
 sem achados
@@ -15,13 +16,13 @@ sem achados
 ## Check 2 — Coverage design → spec (adversarial; flag scope creep)
 | # | Classe | Sítio | Por que morde aqui | Conserto |
 |---|--------|-------|---------------------|----------|
-| W1 | WARNING | design.md:37, design.md:175, design.md:221 (keystore própria) | A nova justificativa (design.md:175) motiva um APK de release **assinado**: o "Artifact smoke" do `task-verify` (task-verify/SKILL.md:72) faz `adb install -r` do release, e o Android recusa instalar APK sem assinatura. Não motiva a **keystore própria**: a alternativa rejeitada na mesma linha, a chave de debug, também passa no smoke. A keystore própria continua sem R* que a motive, sustentada só por "pedido do autor". | O humano reconhece a keystore própria como escopo aceito na Gate 1.5, ou o release passa a ser assinado com a chave de debug e a keystore própria sai do design. |
+| W1 | WARNING | design.md:37, design.md:178 (keystore própria) | A keystore própria continua sem R* que a motive. Agora o design diz isso corretamente: "preferência do autor, não exigência". O humano já aceitou isso como escopo. Mas a linha 178 escreve "escopo aceito no Gate 1.5" antes de a Gate 1.5 acontecer, e com isso registra como fato uma aprovação que ainda não houve. | Reconhecer na Gate 1.5. Até lá, ler em design.md:178 "escopo a reconhecer no Gate 1.5". |
 
 ## Check 3 — Contradictions
 | # | Classe | Sítio | Por que morde aqui | Conserto |
 |---|--------|-------|---------------------|----------|
-| W2 | WARNING | design.md:175 × design.md:37/design.md:221 ("ausente → sem assinatura") × design.md:112 (`installDebug`) × task-verify/SKILL.md:72 | O design diz que o Artifact smoke exige assinatura, mas cria dois caminhos em que esse smoke falha. (1) Sem as propriedades `aodtoggle.keystore.*` o release sai sem assinatura e `adb install` rejeita o APK (`INSTALL_PARSE_FAILED_NO_CERTIFICATES`). (2) Debug e release usam o mesmo `applicationId` (design.md:189) com chaves diferentes. Depois do `installDebug` do Dev-run e da Task 3, o `adb install -r` do release falha com `INSTALL_FAILED_UPDATE_INCOMPATIBLE`. Desinstalar antes resolve, mas perde o `pm grant` (design.md:162-163). | Em design.md:221 e no Rollout, escolher e escrever uma de três saídas: (a) sem as propriedades, o release cai para a assinatura de debug, e o smoke desinstala o debug antes e refaz o `pm grant`; (b) `applicationIdSuffix` no debug, para os dois builds conviverem; (c) aceitar o smoke como `DEFERRED` sem as propriedades, como prevê task-verify/SKILL.md:89. |
-| W3 | WARNING | design.md:233 (Task 3: "`read()` nulo em `SettingNotFoundException`") e design.md:54 (`// null = chave ausente`) × design.md:75 | Pelo fechamento do B2 da rodada 1, `read()` também captura `SecurityException`, mas só a tabela de interfaces (design.md:75) recebeu a mudança. O passo da Task 3, que é o que o executor subagent-driven segue, ainda lista só `SettingNotFoundException`. Uma `SecurityException` não capturada derruba o serviço, o receiver e o gatilho. | Em design.md:233, ler "`read()` nulo em `SettingNotFoundException` e em `SecurityException`, com linhas de log distintas". Em design.md:54, ler `// null = chave ausente ou leitura negada`. |
+| B1 | BLOCKING | design.md:191-195 (premissa 2) × spec.md:58 (N1) | N1 tem um alvo só, de ponta a ponta: "≤ 1 s do toque … até o novo estado visível", medido por cronômetro ou gravação. Não há recorte para o tempo do mostrador. A premissa 2 agora diz que mais de 1 s num mostrador, quando vem do redesenho do mostrador, é "aceita, e não como falha do app". As duas frases não podem valer juntas. O design dispensa de antemão uma medida que a spec aprovada reprova, e o `validation-gate` julga contra a spec. | Opção (a), só no design: ler na premissa 2 "se passar de 1 s num mostrador, N1 falha nesse mostrador. O autor decide no `validation-gate` se dispensa a falha, e a dispensa fica registrada no `evidence.md` com nome e data". Isso mantém a decisão humana pelo canal de dispensa do `validation-gate`. Opção (b): se o humano quiser o recorte no contrato, reabrir o Gate 1 para N1, com nova transcrição. |
+| W4 | WARNING | design.md:37 e design.md:179 ("cada um com sua própria concessão", "sem perder a concessão de cada variante") × design.md:247 (`connectedDebugAndroidTest`) | Por padrão, a tarefa `connected…AndroidTest` do AGP desinstala o APK testado e o APK de teste ao fim da execução. A propriedade `android.injected.androidTest.leaveApksInstalledAfterRun` existe justamente para evitar isso. A Task 3 e todo L3 removem o `cc.floresta.aodtoggle.debug` junto com o seu `pm grant`. A promessa de não perder a concessão do debug é falsa. Depois da Task 3, o Dev-run mostra cinza até alguém reinstalar e conceder de novo. | Em design.md:37 e design.md:179, dizer que a concessão do debug se perde a cada `connectedDebugAndroidTest` e que o Dev-run refaz `installDebug` e `pm grant`. Outra saída: fixar `leaveApksInstalledAfterRun` e dizer onde. |
 
 ## Check 4 — Epic invariants
 n.a. — change sem épico (spec.md:7 `Epic: none`).
@@ -29,12 +30,13 @@ n.a. — change sem épico (spec.md:7 `Epic: none`).
 ## Check 5 — Unstated assumptions
 | # | Classe | Sítio | Por que morde aqui | Conserto |
 |---|--------|-------|---------------------|----------|
-| W4 | WARNING | design.md:180-185 (Assumptions 1 e 2) | As duas premissas agora estão escritas, mas só no design. A premissa 1 estende à leitura o risco da spec ("A concessão `pm grant` …"), que a spec escreve com efeito só em R4/R7. Uma leitura negada derruba também R1–R3. A premissa 2 (redesenho em ≤ 1 s) não tem risco nem mitigação na spec, e o "a decisão é do autor" de design.md:185 deixa a pergunta sem resposta. | Na Gate 1.5, o humano responde às duas premissas: aceita-as como estão, ou dita o que acontece se N1 falhar por causa do mostrador. Se quiser as premissas na spec, a edição passa por nova transcrição do Gate 1. |
+| W3 | WARNING | design.md:246-247 (Task 3, teste instrumentado com `pm revoke` do próprio pacote) e design.md:101 | O teste instrumentado roda dentro do processo do app testado. No Android, revogar uma permissão runtime mata os processos do uid do app. O design não diz se a revogação de `WRITE_SECURE_SETTINGS`, uma permissão de desenvolvimento, faz o mesmo no Wear OS 5 (API 34). A premissa fica sem registro. Se o processo morrer, a execução da instrumentação acaba como queda do processo, e design.md:247 leria isso como "falha de leitura ou escrita pelo app", reabrindo a spec por um defeito do arnês, não da premissa 1. | Escrever a premissa e separar os casos. O caso revogado vai num método próprio, executado por último. Ou sai do teste instrumentado e fica com a lista manual, que já reproduz o estado indisponível com `pm revoke` (design.md:120). Em design.md:247, ler que só uma falha de asserção na leitura ou na escrita, com a concessão feita, reabre a spec. |
+| W5 | WARNING | design.md:37 e design.md:199 (debug e release coexistem) × design.md:278 (Task 8, README) e design.md:283-284 (Task 9, lista manual) | Com `applicationIdSuffix ".debug"`, o relógio pode ter dois apps com o mesmo rótulo e o mesmo ícone, dois provedores "AOD" no seletor de complication e duas entradas no mapeamento de botão. O README (R11, "o roteiro usado em R10") e a lista manual não dizem qual variante se instala, qual pacote recebe o `pm grant`, nem qual entrada se escolhe. Se o revisor escolher a variante sem concessão, R3 e R8 aparecem onde se esperava R4 e R7. N4 inspeciona o release enquanto o Dev-run exercita o debug. | Nas Tasks 8 e 9, nomear a variante da lista manual (o release, pelo README) e o pacote do `pm grant`. Dar ao debug um rótulo distinto (por exemplo, `app_name` por variante) ou mandar desinstalar o debug antes da lista. |
 
 ## Check 6 — Verifiability
 | # | Classe | Sítio | Por que morde aqui | Conserto |
 |---|--------|-------|---------------------|----------|
-| W5 | WARNING | design.md:235 (Task 3, passo "No relógio, antes das demais tasks") | Na Task 3 o app não tem nenhum componente que chame `SystemAodSettings`: o serviço vem na Task 5, o receiver na 6 e o gatilho na 7. O design também não tem `androidTest` (design.md:36). O passo manda "confirmar que o app lê … escreve … e que `checkSelfPermission` reporta", mas nada no app executa esse código, e não há onde ver o resultado. O passo não roda como está escrito. O executor vai pular ou improvisar justo a mitigação antecipada do risco que reabre a spec. | Dizer no passo por onde o app é exercitado. (a) Um teste instrumentado em `app/src/androidTest`, rodado por `./gradlew connectedDebugAndroidTest` (já é o comando L3 do `task-verify`), com a concessão feita antes da execução. (b) Ou mover o passo para o fim da Task 7: `adb shell am start` do gatilho mais `adb shell settings get global ambient_enabled`, antes, depois e com `pm revoke`. |
+| W2 | WARNING | design.md:194-195 ("Se o atraso estiver no app … é falha de N1") e design.md:218 ("a medida separa o tempo do app do tempo do mostrador") × spec.md:62 (N5) | Nenhum instrumento separa os dois tempos. O cronômetro ou a gravação de N1 não enxerga o instante de `requestUpdateAll()`. O instrumento óbvio, uma linha de logcat com hora no caminho feliz, viola N5 ("o caminho feliz não registra nada"). Sem a separação, nenhum revisor aplica o critério de design.md:194-195, e todo atraso pode ser atribuído ao mostrador. | Nomear um instrumento que não exija log no caminho feliz e dizer em que item da Task 9 ele entra. Por exemplo: um trace do Perfetto que capture a execução do `ToggleReceiver`, ou o gatilho como referência do tempo do app, já que ele mostra o estado assim que `toggle()` retorna. Ou retirar a separação e julgar N1 de ponta a ponta, conforme o conserto de B1. |
 
 ## Check 6b — Fronteira do aceite
 sem achados
@@ -50,10 +52,11 @@ sem achados
 
 ## Minimal edit set (on FAIL)
 ### Edições no design
-- design.md:221 e design.md:161-163 → saída escolhida para o smoke de release: fallback para a chave de debug, `applicationIdSuffix` no debug ou `DEFERRED` (W2).
-- design.md:233 → `read()` nulo também em `SecurityException`, com log distinto (W3).
-- design.md:54 → comentário `// null = chave ausente ou leitura negada` (W3).
-- design.md:235 → nomear o meio de exercitar o app no relógio: `androidTest` com `connectedDebugAndroidTest`, ou o passo movido para o fim da Task 7 (W5).
-- design.md:37, design.md:175 → manter a keystore própria com reconhecimento na Gate 1.5, ou trocar pela chave de debug (W1).
+- design.md:191-195 → premissa 2: mais de 1 s num mostrador é falha de N1 nesse mostrador, e a dispensa é do autor no `validation-gate`, registrada no `evidence.md`. Remover "aceita, e não como falha do app" (B1).
+- design.md:194-195, design.md:218 → nomear o instrumento que separa o tempo do app do tempo do mostrador sem log no caminho feliz, ou retirar a separação (W2).
+- design.md:246-247 → registrar a premissa sobre a revogação no processo da instrumentação. Isolar ou mover o caso revogado. Só falha de asserção, com a concessão feita, reabre a spec (W3).
+- design.md:37, design.md:179 → a concessão do debug se perde a cada `connectedDebugAndroidTest`, e o Dev-run reinstala e concede de novo. Ou fixar `leaveApksInstalledAfterRun` (W4).
+- design.md:278, design.md:283-284 → variante e pacote da lista manual e do README. Rótulo distinto para o debug, ou desinstalação antes da lista (W5).
+- design.md:178 → "escopo a reconhecer no Gate 1.5" (W1).
 ### Reabertura do Gate 1
 Reaberturas do Gate 1 propostas: 0
