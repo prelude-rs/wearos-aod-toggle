@@ -88,6 +88,7 @@ Preview: <command of the Dev-run premise used>
 | R20 | 17 | `rootProject.name` passa de `aod-toggle` (não `wearos-complication-aod-toggle`, como diz o design) para `wearos-aod-toggle`; o repositório e a pasta é que se chamavam `wearos-complication-aod-toggle` | Aviso W7 da rodada 9 | Nenhum |
 | R21 | 17 | O título de `specs/SOURCE-OF-TRUTH.md` não é renomeado nesta change | A reescrita do SoT no arquivamento só toca as seções declaradas na spec (regra 5(b)), e o título não está entre elas; aviso W8 da rodada 9 | Título antigo no SoT até uma change futura |
 | R22 | 17 | O prefixo das propriedades de assinatura continua `aodtoggle.keystore.*` (o autor já atualizou o `~/.gradle/gradle.properties` para `~/IAM/prelude-rs-release.jks`, alias `prelude`); o exemplo de `keytool` do README passa a `~/prelude-rs-release.jks`, alias `prelude`, com `-dname "CN=prelude-rs, O=prelude-rs, C=BR"` | Aviso W9 da rodada 9 | Ajuste de documentação |
+| R23 | 17 | `connectedDebugAndroidTest` roda com o relógio conectado pelo nome mDNS, não por `IP:porta` | Com `IP:porta` o AGP falha a tarefa com o teste verde (erro de arnês, não da premissa — regra da lista, item 0a) | Uma linha de README se outro executor tropeçar |
 
 ## Out-of-scope respected
 <!-- Confirm each out-of-scope item was not implemented. -->
@@ -96,6 +97,7 @@ Preview: <command of the Dev-run premise used>
 <!-- Commands run (test suite, lints, build) and exit status. -->
 
 - 2026-10-25 — `./gradlew connectedDebugAndroidTest` no OnePlus Watch 3 (OPWE242, Android 14 / API 34): exit 0, `SystemAodSettingsTest` 1 teste, 0 falhas. Premissa 1 provada (o app concedido lê e escreve `ambient_enabled`); valor do AOD restaurado ao anterior (`0`). Fecha o BLOCKED de R3/R6.
+- 2026-10-25 14:17 — Task 17 (pacote `rs.prelude.aodtoggle.debug`): `./gradlew connectedDebugAndroidTest` no OPWE242: exit 0, `SystemAodSettingsTest` 1 teste, 0 falhas — premissa 1 refeita no pacote novo. Observação de arnês: com o relógio conectado por `IP:porta` (`adb connect 192.168.1.122:33233`) o AGP marca a tarefa como falha mesmo com o teste passando (a instrumentação crua dá `INSTRUMENTATION_CODE: -1`, o XML 1/1 verde); com o nome mDNS (`adb connect "adb-…(2)._adb-tls-connect._tcp"`) a tarefa fica verde. Release `rs.prelude.aodtoggle` instalado (14:18:05), assinado `O=prelude-rs`, permissão concedida; `cc.floresta.aodtoggle` desinstalado.
 
 ## Standards (eixo separado — validation-gate passo 8)
 <!-- Sem código no diff → `n.a. — <motivo>`. Escopo é o diff da change, não o repo.
