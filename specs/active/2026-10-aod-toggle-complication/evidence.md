@@ -283,7 +283,7 @@ Nenhum item DEFERRED. Itens que o sign-off precisa **confirmar explicitamente** 
 |---|---|---|---|
 | N6 — ruling R25 | Fase 2 (sem a complication) medida em 25 min, não "~1 h": 0 acionamentos, 0 mAh | Ricardo Nogueira (autor), 2026-10-25, ruling R25 (bateria a 19%) | aceito por Ricardo Nogueira em 2026-10-25 |
 | N1 — método | Latência registrada como "< 1 s" por observação do autor; os três tempos por item que a lista pede (cronômetro ou gravação) não foram anotados | Execução da lista pelo autor, 2026-10-25 | aceito por Ricardo Nogueira em 2026-10-25 |
-| Adições não especificadas 1–4 e rulings R10, R14, R17, R24 | Ver "Scope audit" — aceitáveis na opinião deste gate | — | ____ |
+| Adições não especificadas 1–4 e rulings R10, R14, R17, R24 | Ver "Scope audit" — aceitáveis na opinião deste gate | — | aceito por Ricardo Nogueira em 2026-10-25 |
 
 Se o sign-off recusar algum item: N6 → refazer a fase 2 de T7 com ~1 h (`adb shell dumpsys batterystats --reset`, ~1 h sem
 a complication em mostrador nenhum, `adb shell dumpsys batterystats | grep -A30 rs.prelude.aodtoggle`); N1 → refazer F8/F9
