@@ -10,6 +10,10 @@ name: CI
 on:
   pull_request:
     branches: [dev, main]
+  # Push na dev (cada merge): é a execução no branch padrão que grava o cache do Gradle — o GitHub isola o
+  # cache por branch, e o de uma PR não serve à próxima. Repositório público: sem custo de minutos.
+  push:
+    branches: [dev]
 
 jobs:
   build-check:
@@ -61,7 +65,7 @@ jobs:
         # A imagem ubuntu-latest traz o Android SDK (ANDROID_HOME). A release sai sem assinatura aqui: a
         # keystore da prelude-rs só existe na máquina do autor (app/build.gradle.kts assina só se as quatro
         # propriedades aodtoggle.keystore.* existirem).
-        run: ./gradlew --no-daemon ktlintCheck detekt lintDebug testDebugUnitTest test assembleRelease
+        run: ./gradlew --no-daemon ktlintCheck detekt lintDebug test assembleRelease
 
       - name: Runner (para medição)
         run: |
@@ -193,6 +197,8 @@ jobs:
       - name: Verify archived gates (dogfood — kit enforces its own gate artifacts)
         # Not a test step: the archive gate is a portable hook the adopter receives and runs here too, so
         # its guard is the hook itself, not a suite of tests/.
+        # Só em PR: compara contra a base da PR; no push na dev não há base (o push só grava o cache).
+        if: github.event_name == 'pull_request'
         run: |
           . "$RUNNER_TEMP/ci-guard.sh" || exit 1
           run_suite .claude/hooks/verify-archived-gates.sh "origin/${{ github.base_ref }}"

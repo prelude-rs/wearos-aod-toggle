@@ -10,6 +10,10 @@ Regras: `spec-layout` → "Changelog de release".
 
 ## [Unreleased]
 
+### Changed
+
+- CI mais rápido: cache do Gradle gravado a cada merge na `dev` e sem teste de unidade duplicado (seq 5, #6)
+
 ## [0.1.0] - 2026-10-25
 
 ### Added
