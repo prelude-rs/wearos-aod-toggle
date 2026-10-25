@@ -86,7 +86,7 @@ refeitos no pacote novo onde indicado.
 | T4 | R8 | OK após conserto | imagem cinza, "AOD unavailable" (cortado na 1ª vez → `9735f06`), interruptor desabilitado sem resposta; chave não mudou |
 | T6 | N6 | OK | `dumpsys alarm` 0, `dumpsys jobscheduler` 0 linhas do pacote (16:11) |
 | T7 fase 1 | N6 | OK | 14:44:45 → 15:45:17 fora do carregador, complication no Gravity, sem toques: `AodComplicationService` launches 8 (≤ ~12), CPU do app 0,66 s, processo em cache 1h00m33s |
-| T7 fase 2 | N6 | pendente | iniciada 16:11:28 sem a complication em mostrador nenhum (esperado 0 acionamentos) |
+| T7 fase 2 | N6 | OK (janela de 25 min — R25) | 16:11:28 → 16:36:39 fora do carregador, sem a complication em mostrador nenhum: o app não aparece no `batterystats` (0 acionamentos do serviço, 0 mAh na estimativa por UID). O relógio gastou 33 mAh no período, com a tela ligada 9 min 36 s (14×), Wi-Fi 11,2 mAh (Play Store 3,9; adb sem fio 3,3) e o sistema/sysui |
 
 ## Requirement walk
 | Req ID | Implemented (file/symbol) | Tested (test name) | Verified how | Result |
@@ -130,6 +130,7 @@ refeitos no pacote novo onde indicado.
 | R22 | 17 | O prefixo das propriedades de assinatura continua `aodtoggle.keystore.*` (o autor já atualizou o `~/.gradle/gradle.properties` para `~/IAM/prelude-rs-release.jks`, alias `prelude`); o exemplo de `keytool` do README passa a `~/prelude-rs-release.jks`, alias `prelude`, com `-dname "CN=prelude-rs, O=prelude-rs, C=BR"` | Aviso W9 da rodada 9 | Ajuste de documentação |
 | R23 | 17 | `connectedDebugAndroidTest` roda com o relógio conectado pelo nome mDNS, não por `IP:porta` | Com `IP:porta` o AGP falha a tarefa com o teste verde (erro de arnês, não da premissa — regra da lista, item 0a) | Uma linha de README se outro executor tropeçar |
 | R24 | 11, 16 | "D" deslocado +7,5 (não +6, como diz o design) em `aod_text.xml` e `ic_launcher_foreground.xml` | Ajuste óptico pedido pelo autor no relógio: a haste reta do D parecia mais perto do anel que a diagonal do A; conferido "harmônico" pelo autor em 2026-10-25 | O design fica com o valor antigo (+6) |
+| R25 | — | A fase 2 da medida de N6 (sem a complication) fecha com 25 min, não 1 h | Bateria do relógio em 19%; decisão do autor; 0 acionamentos em 25 min contra ~3 esperados no ritmo da fase 1 (8/h) já separa os casos | Janela menor que a pedida pela lista |
 
 ## Out-of-scope respected
 <!-- Confirm each out-of-scope item was not implemented. -->
