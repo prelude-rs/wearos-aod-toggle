@@ -8,6 +8,7 @@ Insert-only, **newest first** — the legible evolution timeline. A row is appen
 
 | seq | change-id | date | PR | one-line | archive folder |
 |-----|-----------|------|----|----------|----------------|
+| 5 | 2026-10-ci-gradle-cache | 2026-10-25 | #6 | (via rápida) CI grava o cache do Gradle em push na dev; sem teste duplicado | [specs/archive/2026-10-25-2026-10-ci-gradle-cache/](archive/2026-10-25-2026-10-ci-gradle-cache/) |
 | 4 | 2026-10-release-0.1.0 | 2026-10-25 | #4 | (via rápida) Release 0.1.0: fecha o [Unreleased] e ajusta o versionName | [specs/archive/2026-10-25-2026-10-release-0.1.0/](archive/2026-10-25-2026-10-release-0.1.0/) |
 | 3 | 2026-10-ci-github-hosted | 2026-10-25 | #3 | (via rápida) CI em runner do GitHub com o L2 do app | [specs/archive/2026-10-25-2026-10-ci-github-hosted/](archive/2026-10-25-2026-10-ci-github-hosted/) |
 | 2 | 2026-10-pr-origin-guard | 2026-10-25 | #2 | (via rápida) Guard de origem: PR para main só a partir da dev; título do SoT | [specs/archive/2026-10-25-2026-10-pr-origin-guard/](archive/2026-10-25-2026-10-pr-origin-guard/) |
