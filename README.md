@@ -4,7 +4,7 @@ A Wear OS complication that shows and toggles the watch's Always-On Display (AOD
 
 The AOD switch is `Settings.Global` `ambient_enabled` (1 = on, 0 = off). Writing it requires `android.permission.WRITE_SECURE_SETTINGS`, which Android only lets you grant over adb, hence the `pm grant` step below.
 
-The source lives in `git@github.com:prelude-rs/wearos-aod-toggle.git`. The commands below build and install the release variant, application id `rs.prelude.aodtoggle`, label "AOD". If you still have the old package installed (`cc.floresta.aodtoggle`, until 2026-10-25), uninstall it first: `adb uninstall cc.floresta.aodtoggle`.
+The source lives in `git@github.com:prelude-rs/wearos-aod-toggle.git`. The commands below build and install the release variant, application id `rs.prelude.aodtoggle`, label "AOD". If you still have the old package installed (`cc.floresta.aodtoggle`, the package name used before 2026-10-25), uninstall it first: `adb uninstall cc.floresta.aodtoggle` (and `adb uninstall cc.floresta.aodtoggle.debug` if the old debug build is there).
 
 ## Prerequisites
 
