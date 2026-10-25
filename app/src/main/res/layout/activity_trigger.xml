@@ -13,6 +13,15 @@
         android:layout_height="96dp"
         android:importantForAccessibility="yes" />
 
+    <Switch
+        android:id="@+id/trigger_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/trigger_switch_label"
+        android:textColor="@android:color/white"
+        android:textSize="18sp" />
+
     <TextView
         android:id="@+id/trigger_label"
         android:layout_width="wrap_content"
@@ -20,5 +29,6 @@
         android:layout_marginTop="8dp"
         android:gravity="center"
         android:textColor="@android:color/white"
-        android:textSize="18sp" />
+        android:textSize="18sp"
+        android:visibility="gone" />
 </LinearLayout>

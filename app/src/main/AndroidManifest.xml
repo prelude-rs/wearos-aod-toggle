@@ -29,6 +29,7 @@
             android:name=".trigger.TriggerActivity"
             android:excludeFromRecents="true"
             android:exported="true"
+            android:launchMode="singleTop"
             android:noHistory="true"
             android:theme="@style/Theme.AodToggle.Trigger">
             <intent-filter>

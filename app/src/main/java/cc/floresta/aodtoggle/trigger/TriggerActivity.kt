@@ -1,42 +1,64 @@
 package cc.floresta.aodtoggle.trigger
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
+import android.widget.Switch
 import android.widget.TextView
 import cc.floresta.aodtoggle.R
 import cc.floresta.aodtoggle.complication.requestComplicationRefresh
+import cc.floresta.aodtoggle.core.AodState
 import cc.floresta.aodtoggle.core.presentationOf
+import cc.floresta.aodtoggle.core.triggerViewOf
 import cc.floresta.aodtoggle.system.AodImage
 import cc.floresta.aodtoggle.system.aodToggle
 
-/** Tempo, em ms, que o resultado fica na tela antes de a activity se fechar. */
-const val CLOSE_DELAY_MS = 1000L
-
-/** Activity de lançador (botão físico): alterna o AOD, mostra o resultado por 1 s e se fecha. */
+/**
+ * Activity de lançador (botão físico): alterna o AOD ao abrir e a cada nova abertura com ela no topo,
+ * e mostra o estado com um interruptor. Não se fecha por tempo: sai com o botão ou deslizando.
+ */
 class TriggerActivity : Activity() {
-    private lateinit var root: View
-    private val closeTask = Runnable { finish() }
+    private lateinit var image: ImageView
+    private lateinit var toggleSwitch: Switch
+    private lateinit var label: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_trigger)
-        root = findViewById(R.id.trigger_root)
+        image = findViewById(R.id.trigger_image)
+        toggleSwitch = findViewById(R.id.trigger_switch)
+        label = findViewById(R.id.trigger_label)
+        // Clique (e não OnCheckedChangeListener): o render programático de isChecked não dispara alternância.
+        toggleSwitch.setOnClickListener { toggleAndRender() }
         if (savedInstanceState == null) {
-            val presentation = presentationOf(aodToggle(this).toggle())
-            findViewById<ImageView>(R.id.trigger_image).apply {
-                setImageIcon(AodImage.icon(this@TriggerActivity, presentation))
-                contentDescription = presentation.label
-            }
-            findViewById<TextView>(R.id.trigger_label).text = presentation.label
-            requestComplicationRefresh(this)
+            toggleAndRender()
+        } else {
+            render(aodToggle(this).current())
         }
-        root.postDelayed(closeTask, CLOSE_DELAY_MS)
     }
 
-    override fun onDestroy() {
-        root.removeCallbacks(closeTask)
-        super.onDestroy()
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        toggleAndRender()
+    }
+
+    private fun toggleAndRender() {
+        render(aodToggle(this).toggle())
+        requestComplicationRefresh(this)
+    }
+
+    private fun render(state: AodState) {
+        val presentation = presentationOf(state)
+        val view = triggerViewOf(state)
+        image.setImageIcon(AodImage.icon(this, presentation))
+        image.contentDescription = presentation.label
+        // Sempre do estado relido: o Switch já inverteu sozinho no clique; escrita sem efeito volta ao real.
+        toggleSwitch.isChecked = view.switchChecked
+        toggleSwitch.isEnabled = view.switchEnabled
+        label.text = presentation.label
+        label.visibility = if (view.showLabel) View.VISIBLE else View.GONE
     }
 }
