@@ -8,8 +8,9 @@ Spec: ./spec.md
 
 A complication passa a declarar `MONOCHROMATIC_IMAGE` além de `SMALL_IMAGE` e responde no tipo que o
 pedido traz. O núcleo ganha um mapeamento puro estado → **forma monocromática** (sólido, vazado, tarja),
-testado na JVM. Cada forma é um vector drawable estático, de uma cor só (branco), entregue ao mostrador
-como `Icon` de recurso, que o próprio mostrador pinta com a cor do tema; o sólido reaproveita a arte de
+testado na JVM. Cada forma é um vector drawable estático, de uma cor só (branco), rasterizado pelo app num
+bitmap branco (o mesmo caminho do `SMALL_IMAGE`) e entregue como `Icon` de bitmap, que o mostrador pinta
+com a cor do tema; o sólido reaproveita a arte de
 hoje (`aod_text`). O `SMALL_IMAGE` não muda. Abordagens consideradas: (A) três vectors estáticos —
 escolhida pelo autor: arte toda em XML, nítida em qualquer tamanho, sem código de desenho novo; (B)
 desenhar em código (bitmap + `Canvas`, folga por `CLEAR`) — mais código Android sem teste de unidade e
@@ -44,10 +45,10 @@ fun monochromeFormOf(state: AodState): MonochromeForm = when (state) {
 | Peça | Mudança |
 |---|---|
 | `core/MonochromeForm.kt` (novo) | `MonochromeForm` e `monochromeFormOf` acima. |
-| `res/drawable/aod_mono_hollow.xml` (novo) | Desligado (R3): viewport 100×100, tudo branco. "A" e "D" com os caminhos de `aod_text` e os mesmos deslocamentos (A −6, D +7,5), **só contorno**: `strokeColor` branco, `strokeWidth` 2,2, `strokeLineJoin` round, sem `fillColor` (o contador do A também vira contorno). Relógio com a geometria de `aod_text` (anel de raio 16,95 e traço 3,6; ponteiros; ponto central), cada caminho com `strokeAlpha`/`fillAlpha` 0,6 — o vector não tem alfa de grupo; onde ponteiros e ponto se sobrepõem no centro o alfa compõe (~0,84), efeito aceito. |
+| `res/drawable/aod_mono_hollow.xml` (novo) | Desligado (R3): viewport 100×100, tudo branco. "A" e "D" com os caminhos de `aod_text` e os mesmos deslocamentos (A −6, D +7,5), **só contorno**: `strokeColor` branco, `strokeWidth` 2,2, `strokeLineJoin` round, sem `fillColor` (o contador do A também vira contorno). Relógio com a geometria de `aod_text` (anel de raio 16,95 e traço 3,6; ponteiros; ponto central), cada caminho com `strokeAlpha`/`fillAlpha` 0,6 — o vector não tem alfa de grupo; onde os dois ponteiros e o ponto se sobrepõem no centro o alfa compõe (~0,94), efeito aceito. |
 | `res/drawable/aod_mono_struck.xml` (novo) | Indisponível (R4): o mesmo desenho do `aod_mono_hollow`, dentro de um `<group>` com `<clip-path>` que é o quadro 0–100 (sentido horário) **menos** a faixa da folga (polígono no sentido anti-horário, regra de preenchimento não-zero), mais a **tarja**: linha de (14,76) a (88,24), `strokeWidth` 3,6, `strokeLineCap` round, fora do grupo recortado. A faixa da folga é o retângulo de largura 9 centrado nessa linha (meia-largura 4,5 para cada lado), estendido 4,5 além de cada ponta. Valores da prévia "tarja com folga" aprovada pelo autor. |
 | `res/drawable/aod_text.xml` | Sem mudança; é a forma `SOLID` (R2). |
-| `system/AodImage.kt` | Novo `fun monochromeIcon(context: Context, form: MonochromeForm): Icon` = `Icon.createWithResource(context, <recurso da forma>)` (SOLID → `aod_text`, HOLLOW → `aod_mono_hollow`, STRUCK → `aod_mono_struck`). O `icon(...)` de hoje (bitmap tingido) continua para o `SMALL_IMAGE` e o gatilho. |
+| `system/AodImage.kt` | Novo `fun monochromeIcon(context: Context, form: MonochromeForm): Icon`: rasteriza o recurso da forma (SOLID → `aod_text`, HOLLOW → `aod_mono_hollow`, STRUCK → `aod_mono_struck`) em bitmap de `AOD_IMAGE_SIZE_PX`, branco (alfa preservado), e devolve `Icon.createWithBitmap`. Bitmap, e não `Icon` de recurso, para não depender de o mostrador carregar um recurso de outro pacote — a mesma razão do `SMALL_IMAGE`. O `icon(...)` de hoje continua para o `SMALL_IMAGE` e o gatilho. |
 | `complication/AodComplicationService.kt` | `onComplicationRequest` decide por `request.complicationType`: `SMALL_IMAGE` → como hoje; `MONOCHROMATIC_IMAGE` → `MonochromaticImageComplicationData.Builder(MonochromaticImage.Builder(monochromeIcon(...)).build(), contentDescription)` com o mesmo `tapAction` (`tapActionFor(state)`); outro tipo → `null`. `getPreviewData` responde aos dois tipos com o estado desligado. O cálculo do estado e do `PendingIntent` é o mesmo nos dois tipos (R6). |
 | `AndroidManifest.xml` | `SUPPORTED_TYPES = "MONOCHROMATIC_IMAGE,SMALL_IMAGE"`. A ordem nesta lista não decide nada: quem escolhe é a lista do slot do mostrador (spec, Contexto). `UPDATE_PERIOD_SECONDS` continua 300. |
 | `ComplicationTapReceiver`, `TriggerActivity`, ícone do app | Sem mudança. |
@@ -69,8 +70,9 @@ N/A — a spec declara que não há superfície heurística.
 
 - Launch: com o relógio conectado via adb (README), `./gradlew installDebug`, depois
   `adb shell pm grant rs.prelude.aodtoggle.debug android.permission.WRITE_SECURE_SETTINGS`; no editor do
-  mostrador "Chic", recolocar a complication "AOD Toggle (debug)" num slot de imagem (o slot escolhe a
-  monocromática), e no Gravity num slot que use o `SMALL_IMAGE`. Indisponível: `adb shell pm revoke` da
+  mostrador "Chic", recolocar a complication "AOD Toggle (debug)" num slot de imagem (pela lista lida, o slot
+  escolhe a monocromática), e num mostrador cujo slot use o `SMALL_IMAGE` — o Gravity se a lista de tipos
+  dele, lida por adb, puser o `SMALL_IMAGE` antes da monocromática; senão o fallback do Risco 4 da spec. Indisponível: `adb shell pm revoke` da
   mesma permissão.
 - Mock/dev-flag strategy: nenhuma — sem backend; o único sistema externo é o do relógio, exercido de verdade.
 - Signed exception (Gate 1.5 only): none
@@ -92,7 +94,7 @@ N/A — a spec declara que não há superfície heurística.
 
 | NFR | Por construção | Por teste |
 |---|---|---|
-| N1 | Mesmo caminho do toque de hoje (broadcast → escrita → `requestUpdateAll`); o `Icon` de recurso evita rasterizar no app. | Item da lista no mostrador monocromático. |
+| N1 | Mesmo caminho do toque de hoje (broadcast → escrita → `requestUpdateAll`); a rasterização é a mesma do `SMALL_IMAGE` (um bitmap de 192 px). | Item da lista no mostrador monocromático. |
 | N2 | — | — |
 | N3 | Sem dados de tenant, sem rede. | Coberto por N4. |
 | N4 | Nenhuma permissão nova no manifesto. | `aapt dump permissions` do release. |
@@ -116,7 +118,8 @@ mostradores podem precisar que a complication seja recolocada para trocar de tip
 | Decisão | Opção não tomada | Por quê | ADR? |
 |---|---|---|---|
 | Três vectors estáticos | Desenhar em código; opacidade só | Escolha do autor; arte toda em XML, nítida, sem código de desenho | Não — fácil de reverter. |
-| `Icon` de recurso na monocromática | Bitmap rasterizado (como o `SMALL_IMAGE`) | O mostrador pinta o recurso; nítido em qualquer tamanho; nada a tingir no app | Não. |
+| Bitmap branco na monocromática | `Icon` de recurso | Não depende de o mostrador carregar recurso de outro pacote (achado W4 da rodada 1); o mostrador pinta o bitmap pelo alfa | Não. |
+| Alfa composto ~0,94 no centro do relógio vazado | Recortar os ponteiros no centro | Efeito mínimo (achado W1 da rodada 1); a revisão visual decide | Não. |
 | Folga por `clip-path` com sentido de traçado | Recortar os caminhos geometricamente | Uma faixa só, valores da prévia; sem recalcular a arte | Não. |
 | Alfa 0,6 por caminho do relógio | Alfa de grupo | O vector não tem alfa de grupo; sobreposição no centro aceita | Não. |
 | `MonochromeForm` no núcleo | Decidir a forma no serviço | Mesmo padrão de `presentationOf`/`triggerViewOf`; testável na JVM (R7) | Não. |
@@ -142,6 +145,7 @@ Nenhuma além das que a spec já registra (Contexto e Riscos).
 - A folga do `clip-path` realmente transparente no relógio (sentido de traçado e regra não-zero) — Task 2.
 - O ramo `MONOCHROMATIC_IMAGE` usa o mesmo estado e o mesmo `tapAction` do `SMALL_IMAGE` (R6) — Task 3.
 - `getPreviewData` dos dois tipos (o seletor mostra a prévia monocromática na cor do tema) — Task 3.
+- O mostrador pinta o bitmap branco pelo alfa (relógio a 60% visível) — Task 3 (revisão visual).
 - Legibilidade das letras vazadas e do relógio a 60% no tamanho do slot — Task 2 (revisão visual).
 
 ## Decomposição
@@ -165,10 +169,10 @@ Nenhuma além das que a spec já registra (Contexto e Riscos).
 - [ ] Prévia: SVG equivalente renderizado em PNG (como nas tasks de arte anteriores), anexado ao relatório; a verificação real é a revisão visual.
 
 ### Task 3: Complication responde no tipo monocromático
-**Refs:** R1, R2, R5, R6
+**Refs:** R1, R2, R3, R4, R5, R6
 **Visual:** sim
 **Files:** Modify `app/src/main/java/rs/prelude/aodtoggle/system/AodImage.kt`, `app/src/main/java/rs/prelude/aodtoggle/complication/AodComplicationService.kt`, `app/src/main/AndroidManifest.xml`.
-- [ ] `AodImage.monochromeIcon(context, form)` → `Icon` de recurso por forma.
+- [ ] `AodImage.monochromeIcon(context, form)` → bitmap branco rasterizado do recurso da forma.
 - [ ] `onComplicationRequest` e `getPreviewData` respondem a `MONOCHROMATIC_IMAGE` e `SMALL_IMAGE` (este sem mudança), com o mesmo estado e `tapAction`.
 - [ ] Manifesto: `SUPPORTED_TYPES = "MONOCHROMATIC_IMAGE,SMALL_IMAGE"`.
 
