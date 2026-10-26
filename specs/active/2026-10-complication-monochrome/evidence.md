@@ -61,6 +61,9 @@ Preview: <command of the Dev-run premise used>
 
 | # | Task | Ruling (o quê) | Por quê | Custo se errado |
 |---|------|----------------|---------|-----------------|
+| 1 | 3 | O manifesto declara `SUPPORTED_TYPES="ICON,SMALL_IMAGE"`, e não `MONOCHROMATIC_IMAGE,SMALL_IMAGE` como o design escreveu. `ICON` é o nome do tipo `MONOCHROMATIC_IMAGE` no manifesto; o requisito (R1) não muda. | Na revisão visual (2026-10-25) o Chic pedia `SMALL_IMAGE` com os dois tipos declarados, e com só `MONOCHROMATIC_IMAGE` o provedor nem aparecia no slot: o sistema ignora a string `MONOCHROMATIC_IMAGE`. Os provedores da OnePlus (`HeyHealthService.apk`) declaram `…,ICON`. Com `ICON,SMALL_IMAGE` o `dumpsys` do Chic mostra `3=MonochromaticImageComplicationData` do `rs.prelude.aodtoggle.debug`. | Nenhum provável: confirmado no relógio. Se algum sistema aceitar só o nome novo, a complication cai no `SMALL_IMAGE` (colorida), sem sumir. |
+| 2 | 4 | A leitura da ordem de tipos do Gravity é passo de execução da lista (M0), não da Task 4. Lida em 2026-10-25: slots 1–3 `GOAL_PROGRESS, RANGED_VALUE, SHORT_TEXT, MONOCHROMATIC_IMAGE, SMALL_IMAGE`. | A Task 4 escreve a lista; R8 a executa. | Nenhum: a leitura acontece antes do validation-gate. |
+| 3 | 3 | Sem teste automatizado do ramo Android do serviço (Minor da revisão). | O design declara o relógio como seam; teste exigiria dependência nova (Robolectric), o que fere as Global Constraints. | Uma regressão no ramo monocromático só aparece no relógio. |
 
 ## Out-of-scope respected
 <!-- Confirm each out-of-scope item was not implemented. -->
