@@ -61,6 +61,7 @@ Preview: <command of the Dev-run premise used>
 
 | # | Task | Ruling (o quê) | Por quê | Custo se errado |
 |---|------|----------------|---------|-----------------|
+| 1 | 3, 4 | Execução passa de subagent-driven (design, `**Execução:**`) para Native a partir da Task 3: sem revisão de código por task; fica a revisão final do branch inteiro. Tasks 1–2 já tiveram revisão por task (Task 2 sem). | Decisão do autor (Ricardo Nogueira, 2026-10-25): as revisões por task desta change e da anterior só pegaram detalhes. | Um defeito de uma task só aparece na revisão final, com o branch inteiro. |
 
 ## Out-of-scope respected
 <!-- Confirm each out-of-scope item was not implemented. -->

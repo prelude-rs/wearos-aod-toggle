@@ -44,8 +44,8 @@ Change-ID: 2026-10-complication-short-text
 
 | # | Task | Visual | Status | Commit | Notas |
 |---|------|--------|--------|--------|-------|
-| 1 | design.md § Task 1 | — | PENDING | | |
-| 2 | design.md § Task 2 | VISUAL | PENDING | | |
+| 1 | design.md § Task 1 | — | DONE | 215fa29, e1bb7a4 | L1 verde; review aprovada (1 Minor de glossário corrigido) |
+| 2 | design.md § Task 2 | VISUAL | DONE | bb4c6bf | L1 verde; sem revisão por task (ruling 1) |
 | 3 | design.md § Task 3 | VISUAL | PENDING | | |
 | 4 | design.md § Task 4 | — | PENDING | | |
 | — | validation-gate | — | PENDING | | |
