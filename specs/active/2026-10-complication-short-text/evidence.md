@@ -44,6 +44,24 @@ Preview: <command of the Dev-run premise used>
 | Round | Item (human feedback) | Fix (commit) | L1 |
 |-------|-----------------------|--------------|----|
 
+## Lista manual (R8) — resultados
+
+Execução de `docs/manual-checklist.md` § "Complication em texto curto", em 2026-10-25, no relógio OPWE242 (USB), com o **debug** (`rs.prelude.aodtoggle.debug`, código em 703ad5b; `SUPPORTED_TYPES="SHORT_TEXT,ICON,SMALL_IMAGE"`).
+
+| ID | Resultado | Observação |
+|---|---|---|
+| S0 | OK | Gravity: `dumpsys` com `3=ShortTextComplicationData` do `rs.prelude.aodtoggle.debug` (código final). Chic: `3=ShortTextComplicationData` do mesmo pacote no protótipo descartável (mesmos tipos declarados; desenho do código final visto pelo autor na revisão visual). Uma só "AOD Toggle" no seletor. |
+| S1 | OK | Revisão visual do autor: relógio sólido e "AOD"; após o toque do S5 também. |
+| S2 | OK | Revisão visual do autor: relógio esmaecido e "OFF". |
+| S3 | OK | `pm revoke` + complication recolocada sem tocar: relógio esmaecido e "---" (autor). |
+| S4 | OK | Revisão visual do autor (toques alternam "AOD"/"OFF"). |
+| S5 | OK | `pm grant` com chave 1; toque na "---" → "AOD" com relógio sólido (autor); chave segue 1 e nenhuma escrita nova (`dumpsys settings`: `_id:2043` antes e depois). |
+| S6 | Dispensa proposta | Ver "Deferred / waived items" (aguarda confirmação do autor no sign-off). `UPDATE_PERIOD_SECONDS` declarado no APK de release. |
+| S7 | OK (observação) | Revisão visual do autor; mesmo método das changes anteriores. |
+| S8 | OK | `adb logcat -s AodToggle`: com permissão revogada, `W AodToggle: AOD indisponivel: sem permissao WRITE_SECURE_SETTINGS`; após o `pm grant` e o toque, nenhuma linha nova. |
+| S9 | n/a | Nenhum slot do relógio usa a imagem monocromática ou o `SMALL_IMAGE` (Gravity e Chic preferem o texto curto); R5 se apoia em `MonochromeFormTest` e `PresentationTest` (`testDebugUnitTest`). |
+| S10 | OK | `aapt dump permissions app-release.apk`: só `WRITE_SECURE_SETTINGS`; `dumpsys alarm`: 0 linhas do pacote; `dumpsys jobscheduler`: nenhum job (só contabilidade). |
+
 ## Requirement walk
 | Req ID | Implemented (file/symbol) | Tested (test name) | Verified how | Result |
 |--------|---------------------------|--------------------|--------------|--------|
@@ -83,3 +101,8 @@ Isolação: <subagente separado | ausente — motivo>
 
 ## Deferred / waived items
 <!-- DEFERRED NFRs with their homolog/prod runbook; waivers need the human's name and date. -->
+
+| Item | Decisão | Motivo | Quem / quando |
+|---|---|---|---|
+| S6 (R6, atualização periódica no texto curto em ≤ ~5 min) | Dispensa proposta | Mesmo mecanismo das changes anteriores (`UPDATE_PERIOD_SECONDS=300`, mesmo serviço; o ramo novo só muda o desenho), medido em 2 min 25 s na primeira change. Runbook: relógio fora do cabo, tela ligada no mostrador, mudar o AOD em Configurações, cronometrar até o texto mudar. | pendente — confirmação de Ricardo Nogueira no sign-off |
+
