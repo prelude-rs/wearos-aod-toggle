@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Forma "desligado": o desenho de aod_text, mas "A" e "D" só em contorno (traço 2,2, junção round; os contadores também viram contorno)
-     e o relógio a 60% de alfa. Tudo branco, para o mostrador pintar. -->
+     e o relógio a 60% de alfa. Tudo branco, para o mostrador pintar.
+     A geometria vem de aod_text.xml; qualquer mudança aqui deve ser espelhada em aod_mono_struck.xml (mesmo desenho dentro do clip-path). -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"

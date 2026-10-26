@@ -76,7 +76,7 @@ The grant survives reinstalling with the same signature. It is lost if you unins
 
 ## Use it
 
-**Complication.** On the watch, edit the watch face, pick an image slot and choose "AOD Toggle" (listed under the "AOD" header; the debug build is "AOD Toggle (debug)"). The app itself stays "AOD". The image is the text "AOD" with the O drawn as a clock: white when the AOD is off, amber when it is on, and grey when unavailable (permission not granted, or the setting does not exist). On watch faces whose slot prefers the monochrome image (for example "Chic"), the complication is drawn in the watch face's theme color and the state is read by shape: on is solid, off has hollow A and D with a dimmer clock, and unavailable is the off drawing cut by a diagonal strike. Faces that only accept the colour image keep the colours above. The face picks the type once, when the complication is configured, so to switch type (for example after updating the app) remove the complication from the slot and add it again.
+**Complication.** On the watch, edit the watch face, pick an image slot and choose "AOD Toggle" (listed under the "AOD" header; the debug build is "AOD Toggle (debug)"). The app itself stays "AOD". The image is the text "AOD" with the O drawn as a clock: white when the AOD is off, amber when it is on, and grey when unavailable (permission not granted, or the setting does not exist). On watch faces whose slot prefers the monochrome image (for example "Chic"), the complication is drawn in the watch face's theme colour and the state is read by shape: on is solid, off has hollow A and D with a dimmer clock, and unavailable is the off drawing cut by a diagonal strike. Faces that only accept the colour image keep the colours above. The face picks the type once, when the complication is configured, so to switch type (for example after updating the app) remove the complication from the slot and add it again.
 
 Tapping it toggles the AOD. Tapping it while unavailable re-checks the permission and redraws, without toggling. The system refreshes it every 5 minutes while the watch face is active, so a change made in Settings shows up within about 5 minutes with the screen on.
 
@@ -86,7 +86,7 @@ Tapping it toggles the AOD. Tapping it while unavailable re-checks the permissio
 
 ## Troubleshooting
 
-- Grey complication or "AOD unavailable": usually the permission is missing, but it can also mean the setting key does not exist or the read was denied. Run `adb logcat -s AodToggle` to see which. If it is the permission, run the `pm grant` command above, then tap the complication.
+- Grey complication (on theme-coloured faces, the struck-through drawing) or "AOD unavailable": usually the permission is missing, but it can also mean the setting key does not exist or the read was denied. Run `adb logcat -s AodToggle` to see which. If it is the permission, run the `pm grant` command above, then tap the complication.
 - Install is rejected: the APK is probably unsigned. Check the four `aodtoggle.keystore.*` entries and rebuild.
 - Look at the logs:
   ```sh

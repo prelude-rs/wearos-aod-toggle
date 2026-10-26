@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Forma "indisponível": o desenho de aod_mono_hollow recortado por uma folga em torno da tarja, mais a tarja. Tudo branco, para o mostrador pintar. -->
+<!-- Forma "indisponível": o desenho de aod_mono_hollow recortado por uma folga em torno da tarja, mais a tarja. Tudo branco, para o mostrador pintar.
+     A geometria vem de aod_mono_hollow.xml (e, por ele, de aod_text.xml) e deve ficar em sincronia com ele. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"

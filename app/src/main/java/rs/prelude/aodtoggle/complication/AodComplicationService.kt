@@ -58,20 +58,23 @@ class AodComplicationService : SuspendingComplicationDataSourceService() {
     ): ComplicationData {
         val presentation = presentationOf(state)
         val description = PlainComplicationText.Builder(presentation.label).build()
-        return if (type == ComplicationType.MONOCHROMATIC_IMAGE) {
-            MonochromaticImageComplicationData
-                .Builder(
-                    MonochromaticImage.Builder(AodImage.monochromeIcon(this, monochromeFormOf(state))).build(),
-                    description,
-                ).setTapAction(tapAction)
-                .build()
-        } else {
-            SmallImageComplicationData
-                .Builder(
-                    SmallImage.Builder(AodImage.icon(this, presentation), SmallImageType.ICON).build(),
-                    description,
-                ).setTapAction(tapAction)
-                .build()
+        // Os chamadores passam só os dois tipos declarados (SMALL_IMAGE e MONOCHROMATIC_IMAGE).
+        return when (type) {
+            ComplicationType.MONOCHROMATIC_IMAGE ->
+                MonochromaticImageComplicationData
+                    .Builder(
+                        MonochromaticImage.Builder(AodImage.monochromeIcon(this, monochromeFormOf(state))).build(),
+                        description,
+                    ).setTapAction(tapAction)
+                    .build()
+
+            else ->
+                SmallImageComplicationData
+                    .Builder(
+                        SmallImage.Builder(AodImage.icon(this, presentation), SmallImageType.ICON).build(),
+                        description,
+                    ).setTapAction(tapAction)
+                    .build()
         }
     }
 }
