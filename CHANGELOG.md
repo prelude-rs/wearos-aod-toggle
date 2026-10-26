@@ -4,11 +4,18 @@ Changelog de release deste repositório, no formato [keep-a-changelog](https://k
 Uma frase por change; a história detalhada é o ledger de changes, [`specs/CHANGELOG.md`](specs/CHANGELOG.md).
 Regras: `spec-layout` → "Changelog de release".
 
-**Changes de release (sem item):** seq 4
+**Changes de release (sem item):** seq 4, 8
 
 **Ledger anterior a este arquivo:** seq ≤ 0
 
 ## [Unreleased]
+
+## [0.2.0] - 2026-10-25
+
+### Added
+
+- Complication "AOD Toggle" também em texto curto: o relógio na cor do tema e "AOD", "OFF" ou "---" conforme o estado (seq 7, #7)
+- Complication "AOD Toggle" também em imagem monocromática, pintada na cor do tema do mostrador; o estado aparece pela forma (sólido, vazado, com tarja) (seq 6, #7)
 
 ### Changed
 
