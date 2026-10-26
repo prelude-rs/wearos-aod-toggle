@@ -10,6 +10,10 @@ Regras: `spec-layout` → "Changelog de release".
 
 ## [Unreleased]
 
+### Added
+
+- Complication "AOD Toggle" também em imagem monocromática, pintada na cor do tema do mostrador; o estado aparece pela forma (sólido, vazado, com tarja) (seq 6)
+
 ### Changed
 
 - CI mais rápido: cache do Gradle gravado a cada merge na `dev` e sem teste de unidade duplicado (seq 5, #6)

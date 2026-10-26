@@ -49,4 +49,4 @@ Change-ID: 2026-10-complication-monochrome
 | 3 | design.md § Task 3 | VISUAL | DONE | 0b080f6 | L1 verde; review limpa |
 | 4 | design.md § Task 4 | — | DONE | bf62482, 37fba41 | L1 verde; review aprovada + 5 Minor corrigidos (37fba41) |
 | — | validation-gate | — | DONE | | Verdict: COMPLETE (eixos Spec e Standards) |
-| — | sign-off → archive | — | PENDING | | |
+| — | sign-off → archive | — | DONE | | sign-off de Ricardo Nogueira em 2026-10-25 |

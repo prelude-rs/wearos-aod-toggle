@@ -156,8 +156,8 @@ Isolação: subagente separado do eixo Spec (sonnet), que leu só o diff `16cc06
 | Achado | Smell | Onde (file:line do diff) | Por que morde aqui | Desfecho |
 |---|---|---|---|---|
 | Três `when` sobre `ComplicationType` com o mesmo par de tipos; o de `dataFor` caía no colorido por `else` | Repeated Switches | `AodComplicationService.kt` (`onComplicationRequest`, `getPreviewData`, `dataFor`) | Um tipo novo exigiria três edições; esquecer `dataFor` devolveria o colorido em silêncio | fixed (2a51f79): o tipo é decidido só em `dataFor`, `else -> null` |
-| Desenho vazado copiado dentro do `<group>` com clip-path de `aod_mono_struck.xml` | Duplicated Code | `aod_mono_struck.xml` ~l.12–50 vs `aod_mono_hollow.xml` ~l.8–48 | Ajuste só no `hollow` faria o `struck` derivar; VectorDrawable não tem include | pendente — aceite do autor |
-| Ramo Android (`monochromeIcon`, `rasterize`, `dataFor`) sem teste automatizado | observação (fora dos 12) | `AodImage.kt`, `AodComplicationService.kt` | O design declara o relógio como seam (Ruling 3) | pendente — aceite do autor |
+| Desenho vazado copiado dentro do `<group>` com clip-path de `aod_mono_struck.xml` | Duplicated Code | `aod_mono_struck.xml` ~l.12–50 vs `aod_mono_hollow.xml` ~l.8–48 | Ajuste só no `hollow` faria o `struck` derivar; VectorDrawable não tem include | accepted by Ricardo Nogueira on 2026-10-25 |
+| Ramo Android (`monochromeIcon`, `rasterize`, `dataFor`) sem teste automatizado | observação (fora dos 12) | `AodImage.kt`, `AodComplicationService.kt` | O design declara o relógio como seam (Ruling 3) | accepted by Ricardo Nogueira on 2026-10-25 |
 
 ## Deferred / waived items
 <!-- DEFERRED NFRs with their homolog/prod runbook; waivers need the human's name and date. -->
