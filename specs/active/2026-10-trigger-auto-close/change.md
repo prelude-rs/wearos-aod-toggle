@@ -7,6 +7,7 @@ Verdict: PENDING
 Justification: a tela do gatilho fecha sozinha 3 s depois de mostrar o estado (contagem recomeça a cada alternância); tempo escolhido pelo autor, sem decisão de design
 ---
 # 2026-10-trigger-auto-close
+<!-- authorized-by: Ricardo Nogueira on 2026-10-25 -->
 
 ## O que mudou    <!-- preenchido no PR -->
 ## Por quê        <!-- preenchido no PR -->
