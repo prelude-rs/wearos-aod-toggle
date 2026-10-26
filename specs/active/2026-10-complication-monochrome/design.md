@@ -1,7 +1,9 @@
 # Design: Complication do AOD em imagem monocromática, na cor do tema do mostrador
 
 Change-ID: 2026-10-complication-monochrome
-Status: Draft            <!-- Approved only after consistency-gate PASS + human review -->
+Status: Approved
+<!-- approved-by: Ricardo Nogueira on 2026-10-25 -->
+<!-- approved-content: sha256:db2100c724ba -->
 Spec: ./spec.md
 
 ## Approach summary
