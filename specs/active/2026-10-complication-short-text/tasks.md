@@ -48,5 +48,5 @@ Change-ID: 2026-10-complication-short-text
 | 2 | design.md § Task 2 | VISUAL | DONE | bb4c6bf | L1 verde; sem revisão por task (ruling 1) |
 | 3 | design.md § Task 3 | VISUAL | DONE | 703ad5b | L1 verde; aapt2: SHORT_TEXT,ICON,SMALL_IMAGE |
 | 4 | design.md § Task 4 | — | DONE | 566b098 | L1 verde |
-| — | validation-gate | — | PENDING | | |
-| — | sign-off → archive | — | PENDING | | |
+| — | validation-gate | — | DONE | | Verdict: COMPLETE (eixos Spec e Standards) |
+| — | sign-off → archive | — | DONE | | sign-off de Ricardo Nogueira em 2026-10-25 |
