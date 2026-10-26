@@ -14,7 +14,7 @@ Regras: `spec-layout` → "Changelog de release".
 
 ### Changed
 
-- A tela do gatilho "AOD" fecha sozinha 3 s depois de mostrar o estado e volta ao mostrador (seq 9)
+- A tela do gatilho "AOD" fecha sozinha 3 s depois de mostrar o estado e volta ao mostrador (seq 9, #9)
 
 ## [0.2.0] - 2026-10-25
 
