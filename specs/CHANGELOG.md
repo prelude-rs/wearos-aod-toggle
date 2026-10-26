@@ -8,6 +8,10 @@ Insert-only, **newest first** — the legible evolution timeline. A row is appen
 
 | seq | change-id | date | PR | one-line | archive folder |
 |-----|-----------|------|----|----------|----------------|
+| 8 | 2026-10-release-0.2.0 | 2026-10-25 | #7 | (via rápida) Release 0.2.0: fecha o [Unreleased] (seq 5–7) e ajusta versionName/versionCode | [specs/archive/2026-10-25-2026-10-release-0.2.0/](archive/2026-10-25-2026-10-release-0.2.0/) |
+| 7 | 2026-10-complication-short-text | 2026-10-25 | #7 | Complication também em texto curto (relógio + "AOD"/"OFF"/"---"), preferido pelo Gravity e pelo Chic; anel de valor testado e descartado | [specs/archive/2026-10-25-2026-10-complication-short-text/](archive/2026-10-25-2026-10-complication-short-text/) |
+| 6 | 2026-10-complication-monochrome | 2026-10-25 | #7 | Complication também em imagem monocromática, na cor do tema do mostrador (ligado sólido, desligado vazado, indisponível com tarja); manifesto declara ICON,SMALL_IMAGE | [specs/archive/2026-10-25-2026-10-complication-monochrome/](archive/2026-10-25-2026-10-complication-monochrome/) |
+| 5 | 2026-10-ci-gradle-cache | 2026-10-25 | #6 | (via rápida) CI grava o cache do Gradle em push na dev; sem teste duplicado | [specs/archive/2026-10-25-2026-10-ci-gradle-cache/](archive/2026-10-25-2026-10-ci-gradle-cache/) |
 | 4 | 2026-10-release-0.1.0 | 2026-10-25 | #4 | (via rápida) Release 0.1.0: fecha o [Unreleased] e ajusta o versionName | [specs/archive/2026-10-25-2026-10-release-0.1.0/](archive/2026-10-25-2026-10-release-0.1.0/) |
 | 3 | 2026-10-ci-github-hosted | 2026-10-25 | #3 | (via rápida) CI em runner do GitHub com o L2 do app | [specs/archive/2026-10-25-2026-10-ci-github-hosted/](archive/2026-10-25-2026-10-ci-github-hosted/) |
 | 2 | 2026-10-pr-origin-guard | 2026-10-25 | #2 | (via rápida) Guard de origem: PR para main só a partir da dev; título do SoT | [specs/archive/2026-10-25-2026-10-pr-origin-guard/](archive/2026-10-25-2026-10-pr-origin-guard/) |
