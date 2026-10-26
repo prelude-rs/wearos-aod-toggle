@@ -1,7 +1,9 @@
 # Design: Complication do AOD em texto curto (`SHORT_TEXT`), com o relógio e "AOD"/"OFF"/"---"
 
 Change-ID: 2026-10-complication-short-text
-Status: Draft
+Status: Approved
+<!-- approved-by: Ricardo Nogueira on 2026-10-25 -->
+<!-- approved-content: sha256:7f037143f99c -->
 Spec: ./spec.md
 
 ## Approach summary
