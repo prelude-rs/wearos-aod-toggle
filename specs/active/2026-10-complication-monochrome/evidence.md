@@ -38,10 +38,11 @@ Human decision (if red): n/a — green
      When this file is (re)written (e.g. by the validation-gate), CARRY FORWARD every existing
      approval line (both forms, per change and per task) and every round row — regenerating from
      the template without them destroys approvals. -->
-Preview: <command of the Dev-run premise used>
+Preview: `./gradlew installDebug` + `adb shell pm grant rs.prelude.aodtoggle.debug android.permission.WRITE_SECURE_SETTINGS`; complication "AOD Toggle (debug)" recolocada no slot 3 do Chic (relógio via USB, 2026-10-25)
 
 | Round | Item (human feedback) | Fix (commit) | L1 |
 |-------|-----------------------|--------------|----|
+| 1 | No Chic e no Gravity a complication seguia colorida (âmbar/branca): o mostrador pedia `SMALL_IMAGE`. Causa: o manifesto declarava `MONOCHROMATIC_IMAGE`, string que o sistema ignora; o nome no manifesto é `ICON` (ruling 1). | 6d835d9 | verde (`./gradlew ktlintCheck detekt lintDebug testDebugUnitTest`) |
 
 ## Requirement walk
 | Req ID | Implemented (file/symbol) | Tested (test name) | Verified how | Result |
