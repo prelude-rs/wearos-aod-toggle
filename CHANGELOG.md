@@ -12,6 +12,7 @@ Regras: `spec-layout` → "Changelog de release".
 
 ### Added
 
+- Complication "AOD Toggle" também em texto curto: o relógio na cor do tema e "AOD", "OFF" ou "---" conforme o estado (seq 7)
 - Complication "AOD Toggle" também em imagem monocromática, pintada na cor do tema do mostrador; o estado aparece pela forma (sólido, vazado, com tarja) (seq 6)
 
 ### Changed

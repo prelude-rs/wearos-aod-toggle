@@ -8,6 +8,7 @@ Insert-only, **newest first** — the legible evolution timeline. A row is appen
 
 | seq | change-id | date | PR | one-line | archive folder |
 |-----|-----------|------|----|----------|----------------|
+| 7 | 2026-10-complication-short-text | 2026-10-25 | — | Complication também em texto curto (relógio + "AOD"/"OFF"/"---"), preferido pelo Gravity e pelo Chic; anel de valor testado e descartado | [specs/archive/2026-10-25-2026-10-complication-short-text/](archive/2026-10-25-2026-10-complication-short-text/) |
 | 6 | 2026-10-complication-monochrome | 2026-10-25 | — | Complication também em imagem monocromática, na cor do tema do mostrador (ligado sólido, desligado vazado, indisponível com tarja); manifesto declara ICON,SMALL_IMAGE | [specs/archive/2026-10-25-2026-10-complication-monochrome/](archive/2026-10-25-2026-10-complication-monochrome/) |
 | 5 | 2026-10-ci-gradle-cache | 2026-10-25 | #6 | (via rápida) CI grava o cache do Gradle em push na dev; sem teste duplicado | [specs/archive/2026-10-25-2026-10-ci-gradle-cache/](archive/2026-10-25-2026-10-ci-gradle-cache/) |
 | 4 | 2026-10-release-0.1.0 | 2026-10-25 | #4 | (via rápida) Release 0.1.0: fecha o [Unreleased] e ajusta o versionName | [specs/archive/2026-10-25-2026-10-release-0.1.0/](archive/2026-10-25-2026-10-release-0.1.0/) |

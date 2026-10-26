@@ -9,17 +9,23 @@ instalado por sideload e assinado com a keystore da organização prelude-rs. Re
 é a única permissão que pede.
 
 - **Complication** "AOD Toggle" (no seletor; o app se chama "AOD"): a palavra "AOD" com o O desenhado
-  como relógio (anel e dois ponteiros), sem aro. Oferecida em dois tipos; o mostrador escolhe o de cada
+  como relógio (anel e dois ponteiros), sem aro. Oferecida em três tipos; o mostrador escolhe o de cada
   slot, pela ordem da lista do slot, ao configurar (para trocar de tipo, recolocar a complication):
-  - **imagem monocromática** (declarada como `ICON` no manifesto), pintada na cor do tema do mostrador; o
-    estado vem da forma: ligado = arte sólida; desligado = A e D vazados (só o contorno) e relógio a 60%;
-    indisponível = o desligado cortado por uma tarja diagonal com folga transparente. Gravity e "Chic"
-    (slots 1–3: `GOAL_PROGRESS, RANGED_VALUE, SHORT_TEXT, MONOCHROMATIC_IMAGE, SMALL_IMAGE`) usam esta;
-  - **`SMALL_IMAGE`** (colorida), para slots que não aceitam a monocromática: branca com o AOD desligado,
+  - **texto curto** (`SHORT_TEXT`): o relógio pequeno, na cor do tema, e o texto "AOD" com o AOD ligado
+    (relógio sólido), "OFF" desligado e "---" indisponível (relógio a 60% nos dois). Gravity e "Chic"
+    (slots 1–3: `GOAL_PROGRESS, RANGED_VALUE, SHORT_TEXT, MONOCHROMATIC_IMAGE, SMALL_IMAGE`) usam este —
+    no Chic com a borda e a fonte das vizinhas, no Gravity sobre o disco cinza;
+  - **imagem monocromática** (declarada como `ICON` no manifesto), para slots que não aceitam o texto
+    curto, pintada na cor do tema; o estado vem da forma: ligado = arte sólida; desligado = A e D vazados
+    (só o contorno) e relógio a 60%; indisponível = o desligado cortado por uma tarja diagonal com folga
+    transparente;
+  - **`SMALL_IMAGE`** (colorida), para slots que não aceitam nenhum dos dois: branca com o AOD desligado,
     âmbar (`#FFC107`) ligado e cinza (`#757575`) indisponível.
   Sem a permissão, ou sem a chave no aparelho, aparece indisponível antes de qualquer toque. Os
-  mostradores desenham um disco cinza atrás dos slots de imagem.
-- **Toque na complication** (igual nos dois tipos): ligada ou desligada, alterna o AOD e mostra o estado relido do sistema;
+  mostradores da OnePlus têm desenhos próprios para os provedores da OnePlus (o anel com ícone do
+  batimento, o ponto da temperatura); para outros apps usam desenhos genéricos por tipo — o anel genérico
+  (`RANGED_VALUE`) mostra só imagem ou só texto e ignora cor/opacidade, por isso não é oferecido.
+- **Toque na complication** (igual nos três tipos): ligada ou desligada, alterna o AOD e mostra o estado relido do sistema;
   indisponível, só reavalia permissão e chave e redesenha, sem alternar.
 - **Gatilho** (app "AOD", mapeável a um botão físico): ao abrir, alterna o AOD e mostra a imagem do novo
   estado com um interruptor "AOD". A tela fica aberta até o usuário sair; o interruptor e uma nova
@@ -33,7 +39,7 @@ instalado por sideload e assinado com a keystore da organização prelude-rs. Re
   complication no mostrador, e 0 sem ela. Ao adicionar a complication, a OnePlus mostra um aviso
   genérico de bateria (também para o Maps).
 - **Falhas** geram uma linha `Log.w` na tag `AodToggle`; o caminho feliz não registra nada.
-- Verificado no relógio em dois mostradores (Gravity e "Chic"), nos dois casos com a imagem monocromática.
+- Verificado no relógio em dois mostradores (Gravity e "Chic"), nos dois casos com o texto curto.
 - **Repositório:** público; `dev` aceita só PR com squash e `main` só PR com merge commit, ambos sem
   force-push nem exclusão (rulesets do repositório). PR para `main` só passa vindo da `dev` deste
   repositório: o workflow `PR origin check` (`pull_request_target`, roda a cópia do branch padrão, a `dev`) é check
@@ -63,18 +69,21 @@ Um módulo Android (`app`), Kotlin, `minSdk`/`targetSdk` 34, `compileSdk` 36, Vi
   ou chave ausente; `toggle()` não escreve quando indisponível, senão escreve o oposto e devolve o
   estado relido, registrando escrita sem efeito); `presentationOf` (cor e rótulo por estado);
   `monochromeFormOf` (forma da imagem monocromática: SOLID ligado, HOLLOW desligado, STRUCK indisponível);
+  `shortTextViewOf` (texto e ícone do texto curto: "AOD"/SOLID, "OFF"/DIM, "---"/DIM);
   `tapActionFor` (TOGGLE quando disponível, REFRESH quando indisponível); `triggerViewOf` (interruptor
   marcado/habilitado e texto visível por estado).
 - **Sistema** (`system`): `SystemAodSettings` implementa o porto sobre `Settings.Global` (`AOD_KEY` é o
   único lugar da chave) e liga o núcleo ao logcat; `AodImage` rasteriza vectors em bitmap transparente de
   192 px: `icon` = `aod_text` tingido na cor do estado (`SMALL_IMAGE` e gatilho); `monochromeIcon` = o
   vector da forma em branco puro, alfa preservado (`aod_text`, `aod_mono_hollow`, `aod_mono_struck` — este
-  com a folga feita por `clip-path`), para o mostrador pintar.
+  com a folga feita por `clip-path`), para o mostrador pintar; `clockIcon` = só o relógio (`aod_clock`,
+  `aod_clock_dim` a 60%, viewport 40), também em branco puro.
 - **Complication** (`complication`): `AodComplicationService` (`SuspendingComplicationDataSourceService`,
-  `SUPPORTED_TYPES = ICON,SMALL_IMAGE`, `UPDATE_PERIOD_SECONDS = 300`) decide o tipo num ponto só
-  (`dataFor`): `MonochromaticImageComplicationData` ou `SmallImageComplicationData` (outro tipo → `null`),
+  `SUPPORTED_TYPES = SHORT_TEXT,ICON,SMALL_IMAGE`, `UPDATE_PERIOD_SECONDS = 300`) decide o tipo num ponto
+  só (`dataFor`): `ShortTextComplicationData`, `MonochromaticImageComplicationData` ou
+  `SmallImageComplicationData` (outro tipo → `null`),
   com o mesmo estado e o mesmo `PendingIntent` explícito e imutável, cuja ação vem do estado exibido; a
-  prévia do seletor mostra o desligado nos dois tipos; `ComplicationTapReceiver` (não exportado) alterna só em
+  prévia do seletor mostra o desligado nos três tipos; `ComplicationTapReceiver` (não exportado) alterna só em
   TOGGLE e sempre pede o redesenho (`requestUpdateAll`).
 - **Gatilho** (`trigger`): `TriggerActivity` de lançador (`singleTop`, `noHistory`), que alterna em
   `onCreate` e `onNewIntent`, alterna no clique do interruptor, relê sem alternar em `onRestart` e na
