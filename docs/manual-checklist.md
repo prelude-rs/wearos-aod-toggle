@@ -165,6 +165,46 @@ Mostrador: **Gravity** (se a lista lida no M0 puser `SMALL_IMAGE` antes da monoc
 | Risco 4 (nenhum mostrador usa `SMALL_IMAGE`) | M0 (busca e registro do fato), M10–M11 (n/a + testes de unidade) |
 | Risco 5 (letras vazadas finas) | M3 |
 
+## Complication em texto curto (`2026-10-complication-short-text`)
+
+Verifica R8 desta change: a complication também responde como `SHORT_TEXT` (relógio pequeno na cor do tema e o texto "AOD" ligado, "OFF" desligado, "---" indisponível; relógio sólido no ligado, esmaecido a 60% nos outros), antes da imagem monocromática e do `SMALL_IMAGE`, que não mudam (R5). Roda no relógio real, por adb, no **Gravity** e no **Chic**. Os resultados (mostradores, tipo usado em cada um, data, cada item OK/falha/n.a.) vão para o `evidence.md` da change. `<pacote>` como na seção anterior (debug: `rs.prelude.aodtoggle.debug`).
+
+**Antes de verificar, remova a complication do slot e recoloque-a** (o mostrador escolhe o tipo uma vez, ao configurar — Risco 1 da spec).
+
+| ID | Verifica | Passo | Esperado | Resultado | Observação |
+|---|---|---|---|---|---|
+| S0 | R1 | Em cada mostrador, com a complication recolocada: `adb shell dumpsys wallpaper \| grep mWallpaperComponent`, depois `adb shell dumpsys activity service <pacote/serviço do mostrador> \| grep -o 'lastComplications=.*'`. | O slot da complication traz `ShortTextComplicationData` do `<pacote>`; o seletor lista uma só "AOD Toggle" | | Gravity: ____ / Chic: ____ |
+| S1 | R1, R2 | AOD ligado (`adb shell settings get global ambient_enabled` = 1): olhe a complication. | Relógio sólido em cima, na cor do tema; "AOD" embaixo | | |
+| S2 | R3 | AOD desligado (valor 0). | Relógio esmaecido; "OFF"; distinguível do ligado a olho | | |
+| S3 | R4 | `adb shell pm revoke <pacote> android.permission.WRITE_SECURE_SETTINGS`, recoloque (ou toque) a complication. | Relógio esmaecido; "---"; distinguível do desligado a olho | | |
+| S4 | R6 | Com permissão, toque duas vezes; após cada toque, `adb shell settings get global ambient_enabled` e Configurações > Tela. | A chave e o interruptor alternam; o texto troca entre "AOD" e "OFF" | | |
+| S5 | R6 | Indisponível (S3): `pm grant`; anote a chave; toque; releia. | Redesenha para "AOD" ou "OFF" conforme a chave, **sem alternar** | | |
+| S6 | R6 | Tela ligada no mostrador: mude o AOD em Configurações e volte sem tocar na complication. Cronometre. Confira também `aapt2 dump xmltree --file AndroidManifest.xml app-release.apk \| grep -A1 UPDATE_PERIOD`. | O texto acompanha em ≤ ~5 min; `UPDATE_PERIOD_SECONDS` = 300 | | Tempo: ____ |
+| S7 | N1 | Toque e observe. | Novo estado visível em ≤ 1 s | | |
+| S8 | N5 | `adb logcat -c && adb logcat -s AodToggle`; alterne 2 vezes; depois `pm revoke` e toque; re-conceda. | Caminho feliz: nenhuma linha; indisponível: ≥1 linha | | |
+| S9 | R5 | Num slot que use a imagem monocromática ou o `SMALL_IMAGE` (se houver no relógio), alterne o AOD. Se nenhum slot usar esses tipos, registre "n/a" e aponte `MonochromeFormTest`/`PresentationTest` (`testDebugUnitTest`). | Formas e cores como antes | | |
+| S10 | N4, N6 | `aapt dump permissions` do release; `adb shell dumpsys alarm \| grep <pacote>` e `dumpsys jobscheduler \| grep <pacote>`. | Só `WRITE_SECURE_SETTINGS`; nenhum alarme ou job do pacote | | |
+
+### Cobertura desta change
+
+| Spec | Itens |
+|---|---|
+| R1 | S0, S1 |
+| R2 | S1 |
+| R3 | S2 |
+| R4 | S3 |
+| R5 | S9 (ou testes de unidade) |
+| R6 | S4, S5, S6 |
+| R7 | fora da lista (`testDebugUnitTest`) |
+| R8 | esta lista |
+| N1 | S7 |
+| N4 | S10 |
+| N5 | S8 |
+| N6 | S10 |
+| Risco 1 (slots mantêm o tipo antigo) | preâmbulo: recolocar antes de verificar |
+| Risco 2 (relógio esmaecido sutil) | S2 (o texto distingue) |
+| Risco 3 (mostrador sem ícone ou texto cortado) | S1–S3 |
+
 ## Restauração final
 
 1. Re-conceda a permissão se estiver revogada: `adb shell pm grant <pacote> android.permission.WRITE_SECURE_SETTINGS` (`<pacote>` como na regra da seção anterior: `rs.prelude.aodtoggle` no release, `rs.prelude.aodtoggle.debug` numa rodada com o debug).
