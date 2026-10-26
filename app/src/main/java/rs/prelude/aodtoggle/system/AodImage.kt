@@ -8,6 +8,7 @@ import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import rs.prelude.aodtoggle.R
+import rs.prelude.aodtoggle.core.ClockIcon
 import rs.prelude.aodtoggle.core.MonochromeForm
 import rs.prelude.aodtoggle.core.Presentation
 
@@ -40,6 +41,20 @@ object AodImage {
                 MonochromeForm.SOLID -> R.drawable.aod_text
                 MonochromeForm.HOLLOW -> R.drawable.aod_mono_hollow
                 MonochromeForm.STRUCK -> R.drawable.aod_mono_struck
+            },
+            tintArgb = null,
+        )
+
+    /** Rasteriza o relógio do texto curto em branco puro (alfa preservado), pela mesma razão do [monochromeIcon]. */
+    fun clockIcon(
+        context: Context,
+        icon: ClockIcon,
+    ): Icon =
+        rasterize(
+            context,
+            when (icon) {
+                ClockIcon.SOLID -> R.drawable.aod_clock
+                ClockIcon.DIM -> R.drawable.aod_clock_dim
             },
             tintArgb = null,
         )

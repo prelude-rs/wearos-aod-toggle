@@ -7,6 +7,7 @@ import androidx.wear.watchface.complications.data.ComplicationType
 import androidx.wear.watchface.complications.data.MonochromaticImage
 import androidx.wear.watchface.complications.data.MonochromaticImageComplicationData
 import androidx.wear.watchface.complications.data.PlainComplicationText
+import androidx.wear.watchface.complications.data.ShortTextComplicationData
 import androidx.wear.watchface.complications.data.SmallImage
 import androidx.wear.watchface.complications.data.SmallImageComplicationData
 import androidx.wear.watchface.complications.data.SmallImageType
@@ -16,14 +17,16 @@ import rs.prelude.aodtoggle.core.AodState
 import rs.prelude.aodtoggle.core.TapAction
 import rs.prelude.aodtoggle.core.monochromeFormOf
 import rs.prelude.aodtoggle.core.presentationOf
+import rs.prelude.aodtoggle.core.shortTextViewOf
 import rs.prelude.aodtoggle.core.tapActionFor
 import rs.prelude.aodtoggle.system.AodImage
 import rs.prelude.aodtoggle.system.aodToggle
 
 /**
- * Complication que mostra o estado atual do AOD, em `SMALL_IMAGE` (colorida) e `MONOCHROMATIC_IMAGE`
- * (branca, pintada pelo mostrador). O toque alterna o AOD quando disponível; quando indisponível só
- * redesenha (R6), via [ComplicationTapReceiver]. Os dois tipos usam o mesmo estado e o mesmo toque.
+ * Complication que mostra o estado atual do AOD, em `SHORT_TEXT` (relógio e "AOD"/"OFF"/"---"),
+ * `MONOCHROMATIC_IMAGE` (branca, pintada pelo mostrador) e `SMALL_IMAGE` (colorida). O toque alterna o AOD
+ * quando disponível; quando indisponível só redesenha (R6), via [ComplicationTapReceiver]. Os três tipos
+ * usam o mesmo estado e o mesmo toque.
  */
 class AodComplicationService : SuspendingComplicationDataSourceService() {
     // O tipo é decidido num ponto só, em `dataFor`; um tipo não declarado recebe null.
@@ -52,6 +55,15 @@ class AodComplicationService : SuspendingComplicationDataSourceService() {
         val presentation = presentationOf(state)
         val description = PlainComplicationText.Builder(presentation.label).build()
         return when (type) {
+            ComplicationType.SHORT_TEXT ->
+                shortTextViewOf(state).let { view ->
+                    ShortTextComplicationData
+                        .Builder(PlainComplicationText.Builder(view.text).build(), description)
+                        .setMonochromaticImage(MonochromaticImage.Builder(AodImage.clockIcon(this, view.icon)).build())
+                        .setTapAction(tapAction)
+                        .build()
+                }
+
             ComplicationType.MONOCHROMATIC_IMAGE ->
                 MonochromaticImageComplicationData
                     .Builder(
