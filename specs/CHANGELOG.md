@@ -8,6 +8,7 @@ Insert-only, **newest first** — the legible evolution timeline. A row is appen
 
 | seq | change-id | date | PR | one-line | archive folder |
 |-----|-----------|------|----|----------|----------------|
+| 9 | 2026-10-trigger-auto-close | 2026-10-25 | — | (via rápida) Tela do gatilho fecha sozinha 3 s depois de mostrar o estado | [specs/archive/2026-10-25-2026-10-trigger-auto-close/](archive/2026-10-25-2026-10-trigger-auto-close/) |
 | 8 | 2026-10-release-0.2.0 | 2026-10-25 | #7 | (via rápida) Release 0.2.0: fecha o [Unreleased] (seq 5–7) e ajusta versionName/versionCode | [specs/archive/2026-10-25-2026-10-release-0.2.0/](archive/2026-10-25-2026-10-release-0.2.0/) |
 | 7 | 2026-10-complication-short-text | 2026-10-25 | #7 | Complication também em texto curto (relógio + "AOD"/"OFF"/"---"), preferido pelo Gravity e pelo Chic; anel de valor testado e descartado | [specs/archive/2026-10-25-2026-10-complication-short-text/](archive/2026-10-25-2026-10-complication-short-text/) |
 | 6 | 2026-10-complication-monochrome | 2026-10-25 | #7 | Complication também em imagem monocromática, na cor do tema do mostrador (ligado sólido, desligado vazado, indisponível com tarja); manifesto declara ICON,SMALL_IMAGE | [specs/archive/2026-10-25-2026-10-complication-monochrome/](archive/2026-10-25-2026-10-complication-monochrome/) |
