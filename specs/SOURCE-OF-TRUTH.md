@@ -28,9 +28,10 @@ instalado por sideload e assinado com a keystore da organização prelude-rs. Re
 - **Toque na complication** (igual nos três tipos): ligada ou desligada, alterna o AOD e mostra o estado relido do sistema;
   indisponível, só reavalia permissão e chave e redesenha, sem alternar.
 - **Gatilho** (app "AOD", mapeável a um botão físico): ao abrir, alterna o AOD e mostra a imagem do novo
-  estado com um interruptor "AOD". A tela fica aberta até o usuário sair; o interruptor e uma nova
-  pressão do botão mapeado alternam de novo. Apagar a tela pode fechá-la ou mantê-la; ao reacordar, ela
-  mostra o estado atual sem alternar. Indisponível: imagem cinza, "AOD unavailable" e interruptor
+  estado com um interruptor "AOD". A tela fecha sozinha 3 s depois de mostrar o estado e volta ao
+  mostrador; o interruptor e uma nova pressão do botão mapeado alternam de novo e recomeçam os 3 s. O
+  usuário também pode sair antes. Apagar a tela pode fechá-la ou mantê-la; ao reacordar, ela mostra o
+  estado atual sem alternar. Indisponível: imagem cinza, "AOD unavailable" e interruptor
   desabilitado.
 - **Atualidade:** a complication é atualizada pelo sistema a cada 5 min enquanto está num mostrador
   ativo; uma mudança feita em Configurações aparece em até ~5 min com a tela ligada (medido: 2 min 25 s).
@@ -87,7 +88,8 @@ Um módulo Android (`app`), Kotlin, `minSdk`/`targetSdk` 34, `compileSdk` 36, Vi
   TOGGLE e sempre pede o redesenho (`requestUpdateAll`).
 - **Gatilho** (`trigger`): `TriggerActivity` de lançador (`singleTop`, `noHistory`), que alterna em
   `onCreate` e `onNewIntent`, alterna no clique do interruptor, relê sem alternar em `onRestart` e na
-  recriação, e pede o redesenho da complication a cada alternância.
+  recriação, e pede o redesenho da complication a cada alternância; cada render agenda `finish()` para
+  3 s depois (`AUTO_CLOSE_MS`), cancelando o agendamento anterior.
 - **Build:** Gradle com version catalog; ktlint, detekt e Android lint; release assinado com propriedades
   `aodtoggle.keystore.*` lidas de `~/.gradle/gradle.properties`; debug com sufixo `.debug`. Um teste
   instrumentado (`connectedDebugAndroidTest`) prova no relógio que o app lê e escreve a chave.
