@@ -173,10 +173,10 @@ Verifica R8 desta change: a complication também responde como `SHORT_TEXT` (rel
 
 | ID | Verifica | Passo | Esperado | Resultado | Observação |
 |---|---|---|---|---|---|
-| S0 | R1 | Em cada mostrador, com a complication recolocada: `adb shell dumpsys wallpaper \| grep mWallpaperComponent`, depois `adb shell dumpsys activity service <pacote/serviço do mostrador> \| grep -o 'lastComplications=.*'`. | O slot da complication traz `ShortTextComplicationData` do `<pacote>`; o seletor lista uma só "AOD Toggle" | | Gravity: ____ / Chic: ____ |
+| S0 | R1 | Em cada mostrador, com a complication recolocada: `adb shell dumpsys wallpaper \| grep mWallpaperComponent`, depois `adb shell dumpsys activity service <pacote/serviço do mostrador> \| grep -o 'lastComplications=.*'` (se não mostrar nada, `grep -i ShortTextComplicationData`). | O slot da complication traz `ShortTextComplicationData` do `<pacote>`; o seletor lista uma só "AOD Toggle" | | Gravity: ____ / Chic: ____ |
 | S1 | R1, R2 | AOD ligado (`adb shell settings get global ambient_enabled` = 1): olhe a complication. | Relógio sólido em cima, na cor do tema; "AOD" embaixo | | |
 | S2 | R3 | AOD desligado (valor 0). | Relógio esmaecido; "OFF"; distinguível do ligado a olho | | |
-| S3 | R4 | `adb shell pm revoke <pacote> android.permission.WRITE_SECURE_SETTINGS`, recoloque (ou toque) a complication. | Relógio esmaecido; "---"; distinguível do desligado a olho | | |
+| S3 | R4 | `adb shell pm revoke <pacote> android.permission.WRITE_SECURE_SETTINGS`, recoloque a complication (ou recarregue o mostrador), sem tocar. | Relógio esmaecido; "---"; distinguível do desligado a olho | | |
 | S4 | R6 | Com permissão, toque duas vezes; após cada toque, `adb shell settings get global ambient_enabled` e Configurações > Tela. | A chave e o interruptor alternam; o texto troca entre "AOD" e "OFF" | | |
 | S5 | R6 | Indisponível (S3): `pm grant`; anote a chave; toque; releia. | Redesenha para "AOD" ou "OFF" conforme a chave, **sem alternar** | | |
 | S6 | R6 | Tela ligada no mostrador: mude o AOD em Configurações e volte sem tocar na complication. Cronometre. Confira também `aapt2 dump xmltree --file AndroidManifest.xml app-release.apk \| grep -A1 UPDATE_PERIOD`. | O texto acompanha em ≤ ~5 min; `UPDATE_PERIOD_SECONDS` = 300 | | Tempo: ____ |
