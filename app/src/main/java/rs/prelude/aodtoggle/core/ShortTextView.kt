@@ -3,7 +3,7 @@ package rs.prelude.aodtoggle.core
 /** Ícone de relógio do texto curto: sólido quando ligado, esmaecido nos demais casos (spec R2, R3, R4, R7). */
 enum class ClockIcon { SOLID, DIM }
 
-/** Vista do texto curto da complicação: texto literal do protocolo visual e ícone de relógio (spec R2, R3, R4, R7). */
+/** Vista do texto curto da complication: texto literal do protocolo visual e ícone de relógio (spec R2, R3, R4, R7). */
 data class ShortTextView(
     val text: String,
     val icon: ClockIcon,
