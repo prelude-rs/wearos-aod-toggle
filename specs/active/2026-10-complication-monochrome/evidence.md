@@ -45,6 +45,36 @@ Preview: `./gradlew installDebug` + `adb shell pm grant rs.prelude.aodtoggle.deb
 |-------|-----------------------|--------------|----|
 | 1 | No Chic e no Gravity a complication seguia colorida (âmbar/branca): o mostrador pedia `SMALL_IMAGE`. Causa: o manifesto declarava `MONOCHROMATIC_IMAGE`, string que o sistema ignora; o nome no manifesto é `ICON` (ruling 1). | 6d835d9 | verde (`./gradlew ktlintCheck detekt lintDebug testDebugUnitTest`) |
 
+## Lista manual (R8) — resultados
+
+Execução de `docs/manual-checklist.md` § "Complication monocromática", em 2026-10-25, no relógio OPWE242 (USB), com o **debug** (`rs.prelude.aodtoggle.debug`, código em 6d835d9 = `SUPPORTED_TYPES="ICON,SMALL_IMAGE"`), complication "AOD Toggle (debug)" recolocada no slot 3.
+
+| Campo | Valor |
+|---|---|
+| Lista de tipos do Chic (`com.oplus.wearos.watchface.zhenmo.style`), slots 1–3 | `GOAL_PROGRESS, RANGED_VALUE, SHORT_TEXT, MONOCHROMATIC_IMAGE, SMALL_IMAGE` |
+| Lista de tipos do Gravity (`com.oplus.wearos.watchface.gravity`), slots 1–3 | `GOAL_PROGRESS, RANGED_VALUE, SHORT_TEXT, MONOCHROMATIC_IMAGE, SMALL_IMAGE` (slot 4 `GOAL_PROGRESS`, slot 5 `RANGED_VALUE`) |
+| Tipo usado no Chic | `MONOCHROMATIC_IMAGE` (`dumpsys`: `3=MonochromaticImageComplicationData` do `rs.prelude.aodtoggle.debug`) |
+| Tipo usado no Gravity | `MONOCHROMATIC_IMAGE` (`dumpsys`: `3=MonochromaticImageComplicationData` do `rs.prelude.aodtoggle.debug`) |
+| Mostrador que usa `SMALL_IMAGE` | nenhum — Risco 4: os dois preferem a monocromática; só os mostradores ativos expõem a lista de slots por `dumpsys` |
+
+| ID | Resultado | Observação |
+|---|---|---|
+| M0 | OK | Listas lidas por adb nos dois mostradores (acima). |
+| M1 | OK | Cor do tema no Chic e no Gravity (slot 3), após o conserto da rodada 1 da revisão visual (`ICON`). Os slots 1–3 aceitam a mesma lista de tipos. |
+| M2 | OK | Chave 1: arte sólida na cor do tema (observação do autor). |
+| M3 | OK | Chave 0: A e D vazados, relógio esmaecido; distinguível do ligado (observação do autor). |
+| M4 | OK | `pm revoke`: desligado cortado pela tarja com folga (observação do autor). |
+| M5 | OK | Três toques: três escritas do `rs.prelude.aodtoggle.debug` em `ambient_enabled` (`dumpsys settings`, _id 1798→1801), a chave termina em 1 e o interruptor de Configurações > Tela acompanha (autor); a forma alterna. |
+| M6 | OK | `pm grant` com chave 1; toque na tarja → sólida, chave inalterada; toque seguinte → vazada, chave 0 (vigia da chave por adb: `21:46:21 0`). |
+| M7 | Dispensado (autor) | Ver "Deferred / waived items". Tentativa por `screencap` falhou: com o relógio no cabo, a tela adormecida mostra a tela de carga, não o mostrador. |
+| M8 | OK (observação) | "Está tudo instantâneo" (autor) — mesmo método da change anterior (F8). Gravação `screenrecord` feita, mas sem marcação do toque; onde a troca aparece, completa-se em ~0,2 s. |
+| M9 | OK | `adb logcat -s AodToggle` vazio durante os toques com permissão; com permissão revogada: `W AodToggle: AOD indisponivel: sem permissao WRITE_SECURE_SETTINGS`. |
+| M10 | n/a | Sem mostrador com `SMALL_IMAGE` (Risco 4); R5 se apoia em `PresentationTest` (`testDebugUnitTest`). |
+| M11 | n/a | Idem M10. |
+| M12 | OK | `aapt dump permissions app-release.apk`: só `android.permission.WRITE_SECURE_SETTINGS`; `aapt2 dump xmltree`: `SUPPORTED_TYPES="ICON,SMALL_IMAGE"`. |
+| M13 | OK | `dumpsys alarm`: 0 linhas do pacote; `dumpsys jobscheduler`: 2 linhas, ambas contabilidade (cota `ShrinkableDebits` e mapa de uid), nenhum job. |
+| M14 | Dispensado (autor) | Ver "Deferred / waived items". |
+
 ## Requirement walk
 | Req ID | Implemented (file/symbol) | Tested (test name) | Verified how | Result |
 |--------|---------------------------|--------------------|--------------|--------|
@@ -86,3 +116,9 @@ Isolação: <subagente separado | ausente — motivo>
 
 ## Deferred / waived items
 <!-- DEFERRED NFRs with their homolog/prod runbook; waivers need the human's name and date. -->
+
+| Item | Decisão | Motivo | Quem / quando |
+|---|---|---|---|
+| M7 (R6, atualização sem toque em ≤ ~5 min) | Dispensado | Mesmo mecanismo da change anterior (`UPDATE_PERIOD_SECONDS=300`, mesmo serviço; o ramo monocromático só muda o desenho), medido lá em 2 min 25 s (`specs/archive/2026-10-25-2026-10-aod-toggle-complication/`). Runbook se quiser medir: relógio fora do cabo, tela ligada no mostrador, `adb shell settings put global ambient_enabled <0|1>`, cronometrar até a forma mudar. | waived by Ricardo Nogueira on 2026-10-25 |
+| M14 (N6, `batterystats` ~1 h) | Dispensado | Sem trabalho novo em segundo plano: M13 sem alarme nem job; mesmo período de 300 s; a change anterior mediu ~8 acionamentos/h. Runbook: `adb shell dumpsys batterystats --reset`; ~1 h fora do carregador com a complication monocromática no mostrador ativo; `adb shell dumpsys batterystats \| grep -A30 <pacote>`. | waived by Ricardo Nogueira on 2026-10-25 |
+
