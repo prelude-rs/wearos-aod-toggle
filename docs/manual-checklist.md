@@ -81,7 +81,7 @@ Verifica R8 desta change: a complication também responde como `MONOCHROMATIC_IM
 
 Cobre R1–R6, N1, N4, N5 e N6 desta change. R7 (testes de unidade) é verificado por `./gradlew testDebugUnitTest`; R8 é esta lista. Os itens abaixo se somam aos de cima, que ficam como estão. Os IDs com prefixo `M` são desta change.
 
-Pode rodar sobre o debug (`rs.prelude.aodtoggle.debug`, complication "AOD Toggle (debug)"; `./gradlew installDebug` e `pm grant` do README, "Development") ou sobre o release (`rs.prelude.aodtoggle`, "AOD Toggle"); nos comandos abaixo troque o pacote conforme o caso. Com o debug, só um deles instalado por vez.
+Pode rodar sobre o debug (`rs.prelude.aodtoggle.debug`, complication "AOD Toggle (debug)"; `./gradlew installDebug` e `pm grant` do README, "Development") ou sobre o release (`rs.prelude.aodtoggle`, "AOD Toggle"); nos comandos abaixo troque o pacote conforme o caso. Debug e release podem coexistir (applicationId diferente); recomenda-se testar um por vez, para só um provedor "AOD Toggle" aparecer no seletor.
 
 **Slots já configurados mantêm o tipo escolhido antes da atualização** (o mostrador escolhe o tipo uma vez, ao configurar). **Antes de verificar, remova a complication de cada slot e recoloque-a.**
 
@@ -92,7 +92,7 @@ Registro (preencha):
 | Data | ____ |
 | Pacote testado (debug / release) | ____ |
 | Lista de tipos do Chic (slots 1–3) | `GOAL_PROGRESS, RANGED_VALUE, SHORT_TEXT, MONOCHROMATIC_IMAGE, SMALL_IMAGE` (lida por adb em 2026-10-25) |
-| Lista de tipos do Gravity | ____ (aceita `SMALL_IMAGE`; ordem completa ainda não lida) |
+| Lista de tipos do Gravity | ____ (preencher na execução, pelo M0; hoje só se sabe que aceita `SMALL_IMAGE`) |
 | Tipo usado pela complication no Chic | ____ |
 | Tipo usado pela complication no Gravity | ____ |
 | Mostrador que usa `SMALL_IMAGE` (ou "nenhum") | ____ |
@@ -133,7 +133,7 @@ Mostrador: **Gravity** (se a lista lida no M0 puser `SMALL_IMAGE` antes da monoc
 | ID | Verifica | Passo | Esperado | Resultado | Observação |
 |---|---|---|---|---|---|
 | M10 | R1, R5 | Com a complication no slot, alterne o AOD (ligado, desligado) e veja as cores. | Âmbar ligado, branca desligado, como antes; arte cheia, sem recorte nem retinta | | |
-| M11 | R5, R6 | `pm revoke` e recoloque a complication; depois `pm grant`, toque na cinza. | Cinza com permissão revogada; toque cinza só reavalia e redesenha, sem alternar a chave | | |
+| M11 | R5, R6 | `pm revoke` e recoloque a complication; depois `pm grant`, anote a chave (`adb shell settings get global ambient_enabled`), toque na cinza e releia a chave. | Cinza com permissão revogada. Após o toque, a chave **fica igual** (não alterna) e a complication redesenha para branca (AOD desligado) ou âmbar (ligado) conforme a chave | | |
 
 ### Itens independentes de mostrador
 
@@ -159,11 +159,15 @@ Mostrador: **Gravity** (se a lista lida no M0 puser `SMALL_IMAGE` antes da monoc
 | N4 | M12 |
 | N5 | M9 |
 | N6 | M13, M14 |
-| Riscos 1, 2, 4, 5 | M0, M3, M10 e M11, M3 |
+| Risco 1 (perde âmbar/branco no Chic) | M1–M3 (estado lido pela forma) |
+| Risco 2 (mostrador ignora opacidade) | M3 |
+| Risco 3 (slots mantêm o tipo antigo) | preâmbulo da seção: recolocar a complication antes de verificar |
+| Risco 4 (nenhum mostrador usa `SMALL_IMAGE`) | M0 (busca e registro do fato), M10–M11 (n/a + testes de unidade) |
+| Risco 5 (letras vazadas finas) | M3 |
 
 ## Restauração final
 
-1. Re-conceda a permissão se estiver revogada: `adb shell pm grant rs.prelude.aodtoggle android.permission.WRITE_SECURE_SETTINGS`.
+1. Re-conceda a permissão se estiver revogada: `adb shell pm grant <pacote> android.permission.WRITE_SECURE_SETTINGS` (`<pacote>` como na regra da seção anterior: `rs.prelude.aodtoggle` no release, `rs.prelude.aodtoggle.debug` numa rodada com o debug).
 2. Desfaça a tela mantida ligada da medida de N7: `adb shell svc power stayon false`.
 3. Deixe o AOD no estado que o usuário quer (toque na complication ou `adb shell settings put global ambient_enabled <0|1>`).
 4. Confirme que concordam:
