@@ -71,8 +71,8 @@ Os três textos são literais do protocolo visual (não traduzíveis, não recur
 
 | Seam (onde) | Existente / novo | O que se observa através dele | Req IDs |
 |---|---|---|---|
-| API pública do núcleo `rs.prelude.aodtoggle.core` (`shortTextViewOf`, ao lado de `presentationOf`/`monochromeFormOf`/`tapActionFor`/`triggerViewOf`) | existente | O texto e a forma do ícone de cada estado e de cada causa de indisponível | R2, R3, R4, R7 |
-| O relógio real (lista manual) | existente | Tipo escolhido por mostrador, texto e ícone visíveis, toque, atualização, latência, logcat | R1–R4, R6, R8, N1, N4–N6 |
+| API pública do núcleo `rs.prelude.aodtoggle.core` (`shortTextViewOf`, ao lado de `presentationOf`/`monochromeFormOf`/`tapActionFor`/`triggerViewOf`) | existente | O texto e a forma do ícone de cada estado e de cada causa de indisponível; as cores (`presentationOf`) e as formas (`monochromeFormOf`) de hoje seguem verdes | R2, R3, R4, R5, R7 |
+| O relógio real (lista manual) | existente | Tipo escolhido por mostrador, texto e ícone visíveis, toque, atualização, latência, logcat; a imagem monocromática e o `SMALL_IMAGE` como antes onde usados | R1–R6, R8, N1, N4–N6 |
 
 **Justificativa dos seams novos:** nenhum seam novo.
 
@@ -98,7 +98,7 @@ N/A — a spec declara que não há superfície heurística.
 | R3 | `shortTextViewOf(Off) = ("OFF", DIM)` → `aod_clock_dim` |
 | R4 | `shortTextViewOf(Unavailable) = ("---", DIM)` → `aod_clock_dim` |
 | R5 | Ramos `MONOCHROMATIC_IMAGE` e `SMALL_IMAGE` intocados — preservação |
-| R6 | Mesmo estado e mesmo `tapActionFor`/`PendingIntent` nos três ramos; período no manifesto inalterado |
+| R6 | Mesmo estado e mesmo `tapActionFor`/`PendingIntent` nos três ramos; período no manifesto inalterado (`UPDATE_PERIOD_SECONDS=300`, conferido no APK) e item da lista para a atualização periódica no texto curto |
 | R7 | Testes JUnit 4 de `shortTextViewOf` |
 | R8 | `docs/manual-checklist.md` atualizada e executada; resultados no `evidence.md` |
 
@@ -137,7 +137,12 @@ mostradores precisam que a complication seja recolocada para trocar de tipo.
 
 ## Assumptions
 
-Nenhuma além das que a spec já registra (Contexto e Riscos).
+- **Alfa do ícone esmaecido preservado no texto curto.** O protótipo mediu o relógio sólido, como `Icon` de
+  recurso; o esmaecido em bitmap branco não foi medido no texto curto. Base: o ícone do texto curto é uma
+  `MonochromaticImage`, o mesmo tipo da imagem monocromática, cujo relógio a alfa 0,6 apareceu esmaecido no
+  Gravity e no Chic (M3 da change anterior, em bitmap branco). Se o mostrador ignorar o alfa no ícone do
+  texto curto, ligado e desligado ainda se distinguem pelo texto ("AOD"/"OFF") — risco 2 da spec, aceito.
+  Confirmado na revisão visual (Task 2).
 
 ## Global Constraints
 
@@ -186,5 +191,5 @@ Nenhuma além das que a spec já registra (Contexto e Riscos).
 ### Task 4: README e lista manual
 **Refs:** R8
 **Files:** Modify `README.md`, `docs/manual-checklist.md`.
-- [ ] README: nos mostradores que preferem o texto curto, a complication mostra o relógio e "AOD"/"OFF"/"---"; recolocar a complication para trocar de tipo.
-- [ ] Lista: ler por adb o tipo usado no Gravity e no Chic; itens para R1–R4, R6, N1, N5, N6 no texto curto; tabela de cobertura.
+- [ ] README (Risco 1 da spec: slots já configurados mantêm o tipo antigo): nos mostradores que preferem o texto curto, a complication mostra o relógio e "AOD"/"OFF"/"---"; recolocar a complication para trocar de tipo.
+- [ ] Lista: ler por adb o tipo usado no Gravity e no Chic; itens para R1–R4, R6 (toque, indisponível + `pm grant`, e a atualização periódica: mudar o AOD em Configurações e ver o texto acompanhar em ≤ ~5 min; `aapt2` do release com `UPDATE_PERIOD_SECONDS=300`), R5 (imagem monocromática/`SMALL_IMAGE` onde usados, ou o fallback dos testes de unidade), N1, N5, N6 no texto curto; tabela de cobertura.

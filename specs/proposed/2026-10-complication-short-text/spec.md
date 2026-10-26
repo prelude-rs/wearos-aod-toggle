@@ -3,7 +3,7 @@
 Change-ID: 2026-10-complication-short-text
 Status: Approved
 <!-- approved-by: Ricardo Nogueira on 2026-10-25 -->
-<!-- approved-content: sha256:558aae21830b -->
+<!-- approved-content: sha256:f639d2833791 -->
 Epic: none
 Author(s): ricardo with Claude
 Date: 2026-10-25
