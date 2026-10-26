@@ -46,7 +46,7 @@ Change-ID: 2026-10-complication-short-text
 |---|------|--------|--------|--------|-------|
 | 1 | design.md § Task 1 | — | DONE | 215fa29, e1bb7a4 | L1 verde; review aprovada (1 Minor de glossário corrigido) |
 | 2 | design.md § Task 2 | VISUAL | DONE | bb4c6bf | L1 verde; sem revisão por task (ruling 1) |
-| 3 | design.md § Task 3 | VISUAL | PENDING | | |
-| 4 | design.md § Task 4 | — | PENDING | | |
+| 3 | design.md § Task 3 | VISUAL | DONE | 703ad5b | L1 verde; aapt2: SHORT_TEXT,ICON,SMALL_IMAGE |
+| 4 | design.md § Task 4 | — | DONE | 566b098 | L1 verde |
 | — | validation-gate | — | PENDING | | |
 | — | sign-off → archive | — | PENDING | | |
