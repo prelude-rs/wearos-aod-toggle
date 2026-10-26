@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Forma "desligado": o desenho de aod_text, mas "A" e "D" só em contorno (traço 2,2, junção round; os contadores também viram contorno)
+     e o relógio a 60% de alfa. Tudo branco, para o mostrador pintar. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+    <group android:translateX="-6">
+        <path
+            android:pathData="M9,65 L18,35 L26,35 L35,65 L27.5,65 L25.8,59 L18.2,59 L16.5,65 Z M19.8,53 L24.2,53 L22,44.5 Z"
+            android:strokeColor="#FFFFFFFF"
+            android:strokeLineJoin="round"
+            android:strokeWidth="2.2" />
+    </group>
+    <group android:translateX="7.5">
+        <path
+            android:pathData="M67,35 H76 A15,15 0 0 1 76,65 H67 Z M74,42 V58 H76 A8,8 0 0 0 76,42 Z"
+            android:strokeColor="#FFFFFFFF"
+            android:strokeLineJoin="round"
+            android:strokeWidth="2.2" />
+    </group>
+    <!-- Anel: centro 51,50, raio do traço 16,95; alfa 0,6 (o vector não tem alfa de grupo). -->
+    <path
+        android:pathData="M34.05,50 A16.95,16.95 0 1 0 67.95,50 A16.95,16.95 0 1 0 34.05,50 Z"
+        android:strokeAlpha="0.6"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="3.6" />
+    <!-- Ponteiro de horas: 35 graus, comprimento 8,9. -->
+    <path
+        android:pathData="M51,50 L56.105,42.71"
+        android:strokeAlpha="0.6"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round"
+        android:strokeWidth="4.05" />
+    <!-- Ponteiro de minutos: 270 graus, comprimento 13,3. -->
+    <path
+        android:pathData="M51,50 L37.7,50"
+        android:strokeAlpha="0.6"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round"
+        android:strokeWidth="3.04" />
+    <!-- Ponto central, raio 2,15. Onde os ponteiros e o ponto se sobrepõem o alfa compõe (~0,94): efeito aceito. -->
+    <path
+        android:fillAlpha="0.6"
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M48.85,50 A2.15,2.15 0 1 0 53.15,50 A2.15,2.15 0 1 0 48.85,50 Z" />
+</vector>
