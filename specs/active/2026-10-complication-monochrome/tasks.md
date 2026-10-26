@@ -44,9 +44,9 @@ Change-ID: 2026-10-complication-monochrome
 
 | # | Task | Visual | Status | Commit | Notas |
 |---|------|--------|--------|--------|-------|
-| 1 | design.md § Task 1 | — | PENDING | | |
-| 2 | design.md § Task 2 | VISUAL | PENDING | | |
-| 3 | design.md § Task 3 | VISUAL | PENDING | | |
-| 4 | design.md § Task 4 | — | PENDING | | |
+| 1 | design.md § Task 1 | — | DONE | 0a4b26e | L1 verde; review limpa |
+| 2 | design.md § Task 2 | VISUAL | DONE | 1b6823e | L1 verde; review limpa (1 Minor: nota de sincronia hollow↔struck, não aplicada) |
+| 3 | design.md § Task 3 | VISUAL | DONE | 0b080f6 | L1 verde; review limpa |
+| 4 | design.md § Task 4 | — | DONE | bf62482, 37fba41 | L1 verde; review aprovada + 5 Minor corrigidos (37fba41) |
 | — | validation-gate | — | PENDING | | |
 | — | sign-off → archive | — | PENDING | | |
