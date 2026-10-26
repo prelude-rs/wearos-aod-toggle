@@ -26,21 +26,14 @@ import rs.prelude.aodtoggle.system.aodToggle
  * redesenha (R6), via [ComplicationTapReceiver]. Os dois tipos usam o mesmo estado e o mesmo toque.
  */
 class AodComplicationService : SuspendingComplicationDataSourceService() {
+    // O tipo é decidido num ponto só, em `dataFor`; um tipo não declarado recebe null.
     override suspend fun onComplicationRequest(request: ComplicationRequest): ComplicationData? =
-        when (request.complicationType) {
-            ComplicationType.SMALL_IMAGE, ComplicationType.MONOCHROMATIC_IMAGE ->
-                aodToggle(this).current().let { state ->
-                    dataFor(request.complicationType, state, tapIntentFor(tapActionFor(state)))
-                }
-            else -> null
+        aodToggle(this).current().let { state ->
+            dataFor(request.complicationType, state, tapIntentFor(tapActionFor(state)))
         }
 
     // A prévia do seletor não lê as configurações: mostra sempre o estado desligado.
-    override fun getPreviewData(type: ComplicationType): ComplicationData? =
-        when (type) {
-            ComplicationType.SMALL_IMAGE, ComplicationType.MONOCHROMATIC_IMAGE -> dataFor(type, AodState.Off, null)
-            else -> null
-        }
+    override fun getPreviewData(type: ComplicationType): ComplicationData? = dataFor(type, AodState.Off, null)
 
     // Ação distinta por TapAction: os Intents não são filterEquals e os dois PendingIntents coexistem.
     private fun tapIntentFor(action: TapAction): PendingIntent =
@@ -55,10 +48,9 @@ class AodComplicationService : SuspendingComplicationDataSourceService() {
         type: ComplicationType,
         state: AodState,
         tapAction: PendingIntent?,
-    ): ComplicationData {
+    ): ComplicationData? {
         val presentation = presentationOf(state)
         val description = PlainComplicationText.Builder(presentation.label).build()
-        // Os chamadores passam só os dois tipos declarados (SMALL_IMAGE e MONOCHROMATIC_IMAGE).
         return when (type) {
             ComplicationType.MONOCHROMATIC_IMAGE ->
                 MonochromaticImageComplicationData
@@ -68,13 +60,15 @@ class AodComplicationService : SuspendingComplicationDataSourceService() {
                     ).setTapAction(tapAction)
                     .build()
 
-            else ->
+            ComplicationType.SMALL_IMAGE ->
                 SmallImageComplicationData
                     .Builder(
                         SmallImage.Builder(AodImage.icon(this, presentation), SmallImageType.ICON).build(),
                         description,
                     ).setTapAction(tapAction)
                     .build()
+
+            else -> null
         }
     }
 }
